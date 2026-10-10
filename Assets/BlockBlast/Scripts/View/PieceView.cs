@@ -34,6 +34,12 @@ namespace BlockBlast.View
             foreach (var r in renderers) r.sortingOrder = dragging ? 10 : 5;
         }
 
+        /// <summary>Swaps every cell to the given sprite, e.g. grey when the piece cannot be placed.</summary>
+        public void SetSprite(Sprite sprite)
+        {
+            foreach (var r in renderers) SpriteFactory.SetSprite(r, sprite, 1f);
+        }
+
         /// <summary>World center of the shape's bottom-left cell; used to find the drop cell.</summary>
         public Vector2 BottomLeftCellCenter() => (Vector2)transform.position - HalfExtent() * transform.localScale.x;
 

@@ -23,6 +23,7 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 9c132408a9b24b9c928551d349a5c425, type: 3}
   - {fileID: 21300000, guid: f9ee6c85ed2f4822a74e76c271d68988, type: 3}
   - {fileID: 21300000, guid: 57a16de8fd3e46ac9e0493334145935b, type: 3}
+  noFitBlock: {fileID: 21300000, guid: e64568e959eb46568efb5f2206842c7e, type: 3}
   crown: {fileID: 21300000, guid: a1a557cb4aa547bb9ed8e8317486fc94, type: 3}
   gameOverBackground: {fileID: 21300000, guid: de934b85dc344080b3a36790caecc588, type: 3}
   gameOverPanel: {fileID: 21300000, guid: fe0bdff557a74a17b8aba98d43b39ac0, type: 3}

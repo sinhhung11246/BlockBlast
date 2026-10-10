@@ -14,6 +14,11 @@ namespace BlockBlast.Data
         public int boardSize = 8;
         public int handSize = 3;
 
+        [Tooltip("A new hand is rerolled up to this many times until one piece fits. 1 = pure random.")]
+        public int refillAttempts = 20;
+        [Tooltip("Seconds the board stays visible, with unplaceable pieces greyed, before Game Over.")]
+        public float gameOverDelay = 1.5f;
+
         [Header("Score")]
         public int pointsPerCell = 1;
         public int pointsPerLine = 10;
@@ -46,6 +51,8 @@ namespace BlockBlast.Data
         public Sprite boardFrame;
         [Tooltip("One sprite per block color; each piece gets a random one.")]
         public Sprite[] blockSprites;
+        [Tooltip("Shown on hand pieces that no longer fit when the game ends.")]
+        public Sprite noFitBlock;
         public Sprite crown;
         public Sprite gameOverBackground;
         public Sprite gameOverPanel;
@@ -78,6 +85,8 @@ namespace BlockBlast.Data
         public float scoreTextHeight = 0.7f;
         public Vector2 comboPos = new Vector2(0f, 5.5f);
         public float comboTextHeight = 0.4f;
+        public Vector2 outOfSpacePos = new Vector2(0f, -6.2f);
+        public float outOfSpaceTextHeight = 0.45f;
 
         [Header("Layout: game over")]
         public Vector2 panelPos = new Vector2(0f, 1.55f);

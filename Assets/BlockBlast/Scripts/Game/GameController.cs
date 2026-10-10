@@ -25,9 +25,12 @@ namespace BlockBlast.Game
         GameOverView gameOverView;
         PieceView[] pieceViews;
 
+        enum State { Playing, OutOfSpace, GameOver }
+
         int dragIndex = -1;
         Vector2 dragOffset;
-        bool gameOver;
+        State state;
+        float outOfSpaceTimer;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Bootstrap()
@@ -94,16 +97,16 @@ namespace BlockBlast.Game
         {
             board.Clear();
             score.Reset();
-            gameOver = false;
+            state = State.Playing;
             gameOverView.Show(false);
             DealHand();
-            SyncHud(false);
+            SyncHud();
             boardView.Render(board);
         }
 
         void DealHand()
         {
-            hand.Refill();
+            hand.Refill(board, config.refillAttempts);
             for (int i = 0; i < hand.Count; i++)
             {
                 if (pieceViews[i] != null) Destroy(pieceViews[i].gameObject);
@@ -116,10 +119,15 @@ namespace BlockBlast.Game
         {
             Vector2 pointer = PointerInput.WorldPosition(cam);
 
-            if (gameOver)
+            switch (state)
             {
-                if (PointerInput.Pressed && gameOverView.HitsReplay(pointer)) Restart();
-                return;
+                case State.OutOfSpace:
+                    outOfSpaceTimer -= Time.deltaTime;
+                    if (outOfSpaceTimer <= 0f) ShowGameOver();
+                    return;
+                case State.GameOver:
+                    if (PointerInput.Pressed && gameOverView.HitsReplay(pointer)) Restart();
+                    return;
             }
 
             if (dragIndex < 0)
@@ -175,18 +183,33 @@ namespace BlockBlast.Game
             if (hand.IsEmpty) DealHand();
 
             boardView.Render(board);
-
-            gameOver = !hand.AnyFits(board);
-            gameOverView.Show(gameOver);
-            SyncHud(gameOver && HighScoreStore.Submit(score.Score));
+            if (!hand.AnyFits(board)) EnterOutOfSpace();
+            SyncHud();
         }
 
-        void SyncHud(bool newRecord)
+        /// <summary>Greys out the remaining pieces so the player sees why the game ends, then waits.</summary>
+        void EnterOutOfSpace()
+        {
+            state = State.OutOfSpace;
+            outOfSpaceTimer = config.gameOverDelay;
+            foreach (var view in pieceViews)
+                if (view != null) view.SetSprite(config.noFitBlock);
+        }
+
+        void ShowGameOver()
+        {
+            state = State.GameOver;
+            gameOverView.Show(true);
+            SyncHud(HighScoreStore.Submit(score.Score));
+        }
+
+        void SyncHud(bool newRecord = false)
         {
             hud.Score = score.Score;
             hud.Combo = score.Combo;
             hud.Best = Mathf.Max(HighScoreStore.Load(), score.Score);
-            hud.GameOver = gameOver;
+            hud.OutOfSpace = state == State.OutOfSpace;
+            hud.GameOver = state == State.GameOver;
             hud.NewRecord = newRecord;
         }
 

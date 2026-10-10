@@ -35,7 +35,20 @@ namespace BlockBlast.Core
             }
         }
 
-        public void Refill()
+        /// <summary>
+        /// Deals a new hand, rerolling up to <paramref name="attempts"/> times until at least one
+        /// piece fits. The last roll stays when none fits (the board is truly out of space).
+        /// </summary>
+        public void Refill(Board board, int attempts)
+        {
+            for (int a = 1; ; a++)
+            {
+                Roll();
+                if (a >= attempts || AnyFits(board)) return;
+            }
+        }
+
+        void Roll()
         {
             for (int i = 0; i < slots.Length; i++)
                 slots[i] = new Piece

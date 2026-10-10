@@ -14,6 +14,7 @@ namespace BlockBlast.View
         public int Combo;
         public bool GameOver;
         public bool NewRecord;
+        public bool OutOfSpace;
 
         GameConfig cfg;
         Camera cam;
@@ -42,6 +43,7 @@ namespace BlockBlast.View
             Text("SCORE", cfg.scoreLabelPos, cfg.scoreLabelHeight, cfg.scoreLabelColor);
             Text(Score.ToString(), cfg.scorePos, cfg.scoreTextHeight, cfg.scoreColor);
             if (Combo > 1) Text($"COMBO x{Combo}", cfg.comboPos, cfg.comboTextHeight, cfg.bestColor);
+            if (OutOfSpace) Text("NO MORE SPACE", cfg.outOfSpacePos, cfg.outOfSpaceTextHeight, cfg.scoreColor);
         }
 
         /// <param name="height">Cap height in world units.</param>
