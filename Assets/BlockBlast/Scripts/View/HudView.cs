@@ -1,8 +1,12 @@
+using BlockBlast.Data;
 using UnityEngine;
 
 namespace BlockBlast.View
 {
-    /// <summary>Placeholder HUD drawn with IMGUI. Replace with the Figma UI later; game logic does not depend on it.</summary>
+    /// <summary>
+    /// Score texts, placed at world positions from GameConfig and drawn with IMGUI on top of the sprites.
+    /// Reads only the public fields the controller sets.
+    /// </summary>
     public sealed class HudView : MonoBehaviour
     {
         public int Score;
@@ -10,28 +14,46 @@ namespace BlockBlast.View
         public int Combo;
         public bool GameOver;
         public bool NewRecord;
-        public System.Action OnRestart;
 
+        GameConfig cfg;
+        Camera cam;
         GUIStyle style;
+
+        public void Init(GameConfig config, Camera camera)
+        {
+            cfg = config;
+            cam = camera;
+            SpriteFactory.Create("Crown", transform, cfg.crown, cfg.crownPos, cfg.crownSize.x, 2);
+        }
 
         void OnGUI()
         {
-            float unit = Screen.height / 20f;
-            if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
-            style.fontSize = Mathf.RoundToInt(unit * 0.6f);
-            style.normal.textColor = Color.white;
+            if (cfg == null) return;
+            if (style == null) style = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, font = cfg.font };
 
-            float w = Screen.width;
-            GUI.Label(new Rect(0, unit * 0.5f, w, unit), $"BEST {Best}", style);
-            GUI.Label(new Rect(0, unit * 1.5f, w, unit), $"{Score}", style);
-            if (Combo > 1) GUI.Label(new Rect(0, unit * 2.5f, w, unit), $"COMBO x{Combo}", style);
+            if (GameOver)
+            {
+                Text(NewRecord ? "NEW BEST SCORE" : "SCORE", cfg.resultLabelPos, cfg.resultLabelHeight, cfg.scoreLabelColor);
+                Text(Score.ToString(), cfg.resultScorePos, cfg.resultScoreHeight, cfg.scoreColor);
+                return;
+            }
 
-            if (!GameOver) return;
+            Text(Best.ToString(), cfg.bestPos, cfg.bestTextHeight, cfg.bestColor);
+            Text("SCORE", cfg.scoreLabelPos, cfg.scoreLabelHeight, cfg.scoreLabelColor);
+            Text(Score.ToString(), cfg.scorePos, cfg.scoreTextHeight, cfg.scoreColor);
+            if (Combo > 1) Text($"COMBO x{Combo}", cfg.comboPos, cfg.comboTextHeight, cfg.bestColor);
+        }
 
-            GUI.Box(new Rect(0, 0, w, Screen.height), GUIContent.none);
-            GUI.Label(new Rect(0, Screen.height * 0.4f, w, unit), NewRecord ? "NEW RECORD!" : "GAME OVER", style);
-            var button = new Rect(w * 0.3f, Screen.height * 0.5f, w * 0.4f, unit * 1.2f);
-            if (GUI.Button(button, "RESTART")) OnRestart?.Invoke();
+        /// <param name="height">Cap height in world units.</param>
+        void Text(string text, Vector2 worldPos, float height, Color color)
+        {
+            float pixelsPerUnit = Screen.height / (cam.orthographicSize * 2f);
+            Vector3 screen = cam.WorldToScreenPoint(worldPos);
+            float h = height * pixelsPerUnit;
+
+            style.fontSize = Mathf.RoundToInt(h * 1.4f); // font size ~ 1.4x cap height
+            style.normal.textColor = color;
+            GUI.Label(new Rect(screen.x - Screen.width, Screen.height - screen.y - h, Screen.width * 2f, h * 2f), text, style);
         }
     }
 }

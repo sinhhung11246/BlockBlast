@@ -22,6 +22,7 @@ namespace BlockBlast.Game
         Camera cam;
         BoardView boardView;
         HudView hud;
+        GameOverView gameOverView;
         PieceView[] pieceViews;
 
         int dragIndex = -1;
@@ -42,7 +43,7 @@ namespace BlockBlast.Game
 
             board = new Board(config.boardSize);
             hand = new Hand(config.handSize, config.shapes.Select(Shape.Parse).ToArray(),
-                config.blockColors.Length, new System.Random());
+                config.ColorCount, new System.Random());
             score = new ScoreSystem(new ScoreSystem.Rules
             {
                 PointsPerCell = config.pointsPerCell,
@@ -52,11 +53,14 @@ namespace BlockBlast.Game
             });
 
             SetupCamera();
-            boardView = new GameObject("Board").AddComponent<BoardView>();
-            boardView.transform.SetParent(transform, false);
+            var bg = SpriteFactory.Create("Background", transform, config.background, Vector2.zero, 1f, -10);
+            SpriteFactory.Cover(bg, cam);
+            boardView = Child<BoardView>("Board");
             boardView.Build(config);
-            hud = gameObject.AddComponent<HudView>();
-            hud.OnRestart = Restart;
+            hud = Child<HudView>("Hud");
+            hud.Init(config, cam);
+            gameOverView = Child<GameOverView>("GameOver");
+            gameOverView.Build(config, cam);
             pieceViews = new PieceView[config.handSize];
 
             Restart();
@@ -72,15 +76,18 @@ namespace BlockBlast.Game
             }
             cam.orthographic = true;
             cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = config.backgroundColor;
+            cam.backgroundColor = Color.black;
 
-            // Frame the play area: HUD space above the board, hand below it.
-            float halfBoard = config.boardSize * config.cellSize * 0.5f;
-            float top = config.boardCenterY + halfBoard + 3f * config.cellSize;
-            float bottom = config.handY - 2f * config.cellSize;
-            float halfWidth = halfBoard + config.cellSize * 0.5f;
-            cam.orthographicSize = Mathf.Max((top - bottom) * 0.5f, halfWidth / cam.aspect);
-            cam.transform.position = new Vector3(0f, (top + bottom) * 0.5f, -10f);
+            // Show the whole Figma screen; wider or taller devices see extra background.
+            cam.orthographicSize = Mathf.Max(config.designSize.y, config.designSize.x / cam.aspect) * 0.5f;
+            cam.transform.position = new Vector3(0f, 0f, -10f);
+        }
+
+        T Child<T>(string name) where T : Component
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(transform, false);
+            return go.AddComponent<T>();
         }
 
         void Restart()
@@ -88,6 +95,7 @@ namespace BlockBlast.Game
             board.Clear();
             score.Reset();
             gameOver = false;
+            gameOverView.Show(false);
             DealHand();
             SyncHud(false);
             boardView.Render(board);
@@ -106,9 +114,13 @@ namespace BlockBlast.Game
 
         void Update()
         {
-            if (gameOver) return;
-
             Vector2 pointer = PointerInput.WorldPosition(cam);
+
+            if (gameOver)
+            {
+                if (PointerInput.Pressed && gameOverView.HitsReplay(pointer)) Restart();
+                return;
+            }
 
             if (dragIndex < 0)
             {
@@ -165,6 +177,7 @@ namespace BlockBlast.Game
             boardView.Render(board);
 
             gameOver = !hand.AnyFits(board);
+            gameOverView.Show(gameOver);
             SyncHud(gameOver && HighScoreStore.Submit(score.Score));
         }
 

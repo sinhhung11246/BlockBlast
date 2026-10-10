@@ -20,14 +20,10 @@ namespace BlockBlast.View
             view.Piece = piece;
 
             Shape shape = piece.Shape;
-            Vector2 offset = new Vector2(shape.Width - 1, shape.Height - 1) * 0.5f;
+            Sprite sprite = cfg.BlockSprite(piece.ColorId);
             view.renderers = new SpriteRenderer[shape.Cells.Length];
             for (int i = 0; i < shape.Cells.Length; i++)
-            {
-                Vector2 local = ((Vector2)shape.Cells[i] - offset) * cfg.cellSize;
-                view.renderers[i] = CellSprite.Create(view.transform, cfg, local, 5);
-                view.renderers[i].color = cfg.ColorOf(piece.ColorId);
-            }
+                view.renderers[i] = SpriteFactory.Create("Cell", view.transform, sprite, (Vector2)shape.Cells[i] - view.HalfExtent(), 1f, 5);
             return view;
         }
 
@@ -39,11 +35,8 @@ namespace BlockBlast.View
         }
 
         /// <summary>World center of the shape's bottom-left cell; used to find the drop cell.</summary>
-        public Vector2 BottomLeftCellCenter()
-        {
-            Shape shape = Piece.Shape;
-            Vector2 offset = new Vector2(shape.Width - 1, shape.Height - 1) * 0.5f * cfg.cellSize;
-            return (Vector2)transform.position - offset * transform.localScale.x;
-        }
+        public Vector2 BottomLeftCellCenter() => (Vector2)transform.position - HalfExtent() * transform.localScale.x;
+
+        Vector2 HalfExtent() => new Vector2(Piece.Shape.Width - 1, Piece.Shape.Height - 1) * 0.5f;
     }
 }
