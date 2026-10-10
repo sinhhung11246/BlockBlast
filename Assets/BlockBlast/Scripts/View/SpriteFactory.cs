@@ -28,14 +28,12 @@ namespace BlockBlast.View
             sr.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
-        /// <summary>Scales a renderer so its sprite covers the whole camera view.</summary>
-        public static void Cover(SpriteRenderer sr, Camera cam)
+        /// <summary>Keeps a renderer covering the whole camera view, refitting when the screen aspect changes.</summary>
+        /// <param name="margin">Extra scale, e.g. so camera shake never shows the edge.</param>
+        public static void Cover(SpriteRenderer sr, Camera cam, float margin = 1f)
         {
-            Vector2 view = new Vector2(cam.orthographicSize * 2f * cam.aspect, cam.orthographicSize * 2f);
-            Vector2 size = sr.sprite.bounds.size;
-            float scale = Mathf.Max(view.x / size.x, view.y / size.y);
             sr.transform.position = new Vector3(cam.transform.position.x, cam.transform.position.y, 0f);
-            sr.transform.localScale = new Vector3(scale, scale, 1f);
+            sr.gameObject.AddComponent<CoverCamera>().Init(sr, cam, margin);
         }
 
         /// <summary>Full-screen tinted quad, e.g. to dim what is behind a popup.</summary>

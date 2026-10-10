@@ -35,6 +35,7 @@ namespace BlockBlast.Game
         Vector2 dragOffset;
         State state;
         float outOfSpaceTimer;
+        float fittedAspect;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Bootstrap()
@@ -61,8 +62,7 @@ namespace BlockBlast.Game
 
             SetupCamera();
             var bg = SpriteFactory.Create("Background", transform, config.background, Vector2.zero, 1f, -10);
-            SpriteFactory.Cover(bg, cam);
-            bg.transform.localScale *= 1.05f; // margin so camera shake never shows the edge
+            SpriteFactory.Cover(bg, cam, 1.05f); // margin so camera shake never shows the edge
             boardView = Child<BoardView>("Board");
             boardView.Build(config);
             hud = Child<HudView>("Hud");
@@ -92,9 +92,15 @@ namespace BlockBlast.Game
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
 
-            // Show the whole Figma screen; wider or taller devices see extra background.
-            cam.orthographicSize = Mathf.Max(config.designSize.y, config.designSize.x / cam.aspect) * 0.5f;
             cam.transform.position = new Vector3(0f, 0f, -10f);
+            FitCamera();
+        }
+
+        /// <summary>Shows the whole Figma screen; wider or taller devices see extra background.</summary>
+        void FitCamera()
+        {
+            fittedAspect = cam.aspect;
+            cam.orthographicSize = Mathf.Max(config.designSize.y, config.designSize.x / cam.aspect) * 0.5f;
         }
 
         T Child<T>(string name) where T : Component
@@ -142,6 +148,7 @@ namespace BlockBlast.Game
 
         void Update()
         {
+            if (cam.aspect != fittedAspect) FitCamera(); // screen resized or rotated
             Vector2 pointer = PointerInput.WorldPosition(cam);
 
             if (settingsView.IsOpen)
