@@ -33,6 +33,7 @@ MonoBehaviour:
   replayButton: {fileID: 21300000, guid: 5077a2f51b4d48b2b59bc0149e094c18, type: 3}
   homeButton: {fileID: 21300000, guid: d511a9c06fcb42c9b32567145e67814b, type: 3}
   homeBackground: {fileID: 21300000, guid: caa2e173f45c4428a354731638343223, type: 3}
+  homeArt: {fileID: 21300000, guid: c887fca170de4ef8b8f7674ff5c0d615, type: 3}
   adventureButton: {fileID: 21300000, guid: d2237e40851d4de3b818adc67991229b, type: 3}
   classicButton: {fileID: 21300000, guid: 6bb8458f7dfa442cbdca47ba6c791035, type: 3}
   homeGear: {fileID: 21300000, guid: 358e0a6ca7ce43288a483033ed4a3bae, type: 3}

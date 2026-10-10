@@ -60,8 +60,10 @@ namespace BlockBlast.Data
         public Sprite gameOverPanel;
         public Sprite replayButton;
         public Sprite homeButton;
-        [Tooltip("Home screen without its buttons.")]
+        [Tooltip("Home gradient; covers the whole screen.")]
         public Sprite homeBackground;
+        [Tooltip("Home logo, icons and event card at design size, so they stay aligned with the buttons on any screen.")]
+        public Sprite homeArt;
         public Sprite adventureButton;
         public Sprite classicButton;
         public Sprite homeGear;
@@ -123,6 +125,8 @@ namespace BlockBlast.Data
         public float homeWidth = 2.99f;
 
         [Header("Layout: home")]
+        [Tooltip("World width of homeArt, the full Figma home frame (1446 px).")]
+        public float homeArtWidth = 8.66f;
         [Tooltip("Adventure has no mode of its own yet, so it starts Classic too.")]
         public Vector2 adventurePos = new Vector2(0.03f, -4.24f);
         public Vector2 classicPos = new Vector2(0.03f, -7.13f);

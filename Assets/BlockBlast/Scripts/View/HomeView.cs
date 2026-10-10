@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace BlockBlast.View
 {
-    /// <summary>Home screen: background with the mode buttons and the settings gear on top.</summary>
+    /// <summary>
+    /// Home screen: gradient covering the screen, then the logo / icons / event card and the buttons,
+    /// both in design coordinates so wider or taller screens never shift one against the other.
+    /// </summary>
     public sealed class HomeView : MonoBehaviour
     {
         SpriteRenderer adventure, classic, gear;
@@ -12,9 +15,10 @@ namespace BlockBlast.View
         {
             var bg = SpriteFactory.Create("Background", transform, cfg.homeBackground, Vector2.zero, 1f, 40);
             SpriteFactory.Cover(bg, cam);
-            adventure = SpriteFactory.Create("Adventure", transform, cfg.adventureButton, cfg.adventurePos, cfg.modeButtonWidth, 41);
-            classic = SpriteFactory.Create("Classic", transform, cfg.classicButton, cfg.classicPos, cfg.modeButtonWidth, 41);
-            gear = SpriteFactory.Create("Settings", transform, cfg.homeGear, cfg.homeGearPos, cfg.homeGearWidth, 41);
+            SpriteFactory.Create("Art", transform, cfg.homeArt, Vector2.zero, cfg.homeArtWidth, 41);
+            adventure = SpriteFactory.Create("Adventure", transform, cfg.adventureButton, cfg.adventurePos, cfg.modeButtonWidth, 42);
+            classic = SpriteFactory.Create("Classic", transform, cfg.classicButton, cfg.classicPos, cfg.modeButtonWidth, 42);
+            gear = SpriteFactory.Create("Settings", transform, cfg.homeGear, cfg.homeGearPos, cfg.homeGearWidth, 42);
             gameObject.SetActive(false);
         }
 
