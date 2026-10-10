@@ -11,7 +11,6 @@ namespace BlockBlast.View
     {
         public int Score;
         public int Best;
-        public int Combo;
         public bool GameOver;
         public bool NewRecord;
         public bool OutOfSpace;
@@ -19,12 +18,20 @@ namespace BlockBlast.View
         GameConfig cfg;
         Camera cam;
         GUIStyle style;
+        float shownScore; // rolls toward Score
 
         public void Init(GameConfig config, Camera camera)
         {
             cfg = config;
             cam = camera;
             SpriteFactory.Create("Crown", transform, cfg.crown, cfg.crownPos, cfg.crownSize.x, 2);
+        }
+
+        void Update()
+        {
+            if (cfg == null) return;
+            if (Score < shownScore || Mathf.Abs(Score - shownScore) < 0.5f) shownScore = Score; // restart or arrived
+            else shownScore += (Score - shownScore) * (1f - Mathf.Exp(-Time.deltaTime * 4f / cfg.scoreRollTime));
         }
 
         void OnGUI()
@@ -41,8 +48,7 @@ namespace BlockBlast.View
 
             Text(Best.ToString(), cfg.bestPos, cfg.bestTextHeight, cfg.bestColor);
             Text("SCORE", cfg.scoreLabelPos, cfg.scoreLabelHeight, cfg.scoreLabelColor);
-            Text(Score.ToString(), cfg.scorePos, cfg.scoreTextHeight, cfg.scoreColor);
-            if (Combo > 1) Text($"COMBO x{Combo}", cfg.comboPos, cfg.comboTextHeight, cfg.bestColor);
+            Text(Mathf.RoundToInt(shownScore).ToString(), cfg.scorePos, cfg.scoreTextHeight, cfg.scoreColor);
             if (OutOfSpace) Text("NO MORE SPACE", cfg.outOfSpacePos, cfg.outOfSpaceTextHeight, cfg.scoreColor);
         }
 

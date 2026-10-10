@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using BlockBlast.Core;
 using BlockBlast.Data;
@@ -23,6 +24,7 @@ namespace BlockBlast.Game
         BoardView boardView;
         HudView hud;
         GameOverView gameOverView;
+        VfxView vfx;
         PieceView[] pieceViews;
 
         enum State { Playing, OutOfSpace, GameOver }
@@ -58,12 +60,15 @@ namespace BlockBlast.Game
             SetupCamera();
             var bg = SpriteFactory.Create("Background", transform, config.background, Vector2.zero, 1f, -10);
             SpriteFactory.Cover(bg, cam);
+            bg.transform.localScale *= 1.05f; // margin so camera shake never shows the edge
             boardView = Child<BoardView>("Board");
             boardView.Build(config);
             hud = Child<HudView>("Hud");
             hud.Init(config, cam);
             gameOverView = Child<GameOverView>("GameOver");
             gameOverView.Build(config, cam);
+            vfx = Child<VfxView>("Vfx");
+            vfx.Init(config, cam);
             pieceViews = new PieceView[config.handSize];
 
             Restart();
@@ -97,6 +102,7 @@ namespace BlockBlast.Game
         {
             board.Clear();
             score.Reset();
+            vfx.Clear();
             state = State.Playing;
             gameOverView.Show(false);
             DealHand();
@@ -173,9 +179,13 @@ namespace BlockBlast.Game
             }
 
             board.Place(piece.Shape, origin, piece.ColorId);
+            vfx.Place(piece.Shape.Cells.Select(c => boardView.CellCenter(origin + c)), config.BlockSprite(piece.ColorId));
+
             LineSet lines = board.FindFullLines();
+            if (lines.Count > 0) vfx.ClearCells(ClearedCells(lines), PieceCenter(piece, origin), lines.Count);
             board.ClearLines(lines);
             score.AddPlacement(piece.Shape.Cells.Length, lines.Count);
+            if (lines.Count > 0 && score.Combo >= config.comboPopupMin) vfx.Combo(score.Combo);
 
             hand.Take(i);
             Destroy(pieceViews[i].gameObject);
@@ -186,6 +196,20 @@ namespace BlockBlast.Game
             if (!hand.AnyFits(board)) EnterOutOfSpace();
             SyncHud();
         }
+
+        /// <summary>Every cell of the lines with its block sprite; read before the lines are removed.</summary>
+        IEnumerable<(Vector2, Sprite)> ClearedCells(LineSet lines)
+        {
+            var cells = new HashSet<Vector2Int>();
+            foreach (int y in lines.Rows)
+                for (int x = 0; x < board.Size; x++) cells.Add(new Vector2Int(x, y));
+            foreach (int x in lines.Columns)
+                for (int y = 0; y < board.Size; y++) cells.Add(new Vector2Int(x, y));
+            return cells.Select(c => (boardView.CellCenter(c), config.BlockSprite(board[c.x, c.y]))).ToList();
+        }
+
+        Vector2 PieceCenter(Hand.Piece piece, Vector2Int origin) =>
+            boardView.CellCenter(origin) + new Vector2(piece.Shape.Width - 1, piece.Shape.Height - 1) * 0.5f;
 
         /// <summary>Greys out the remaining pieces so the player sees why the game ends, then waits.</summary>
         void EnterOutOfSpace()
@@ -206,7 +230,6 @@ namespace BlockBlast.Game
         void SyncHud(bool newRecord = false)
         {
             hud.Score = score.Score;
-            hud.Combo = score.Combo;
             hud.Best = Mathf.Max(HighScoreStore.Load(), score.Score);
             hud.OutOfSpace = state == State.OutOfSpace;
             hud.GameOver = state == State.GameOver;

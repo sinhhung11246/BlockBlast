@@ -1,0 +1,28 @@
+fileFormatVersion: 2
+guid: d6a5f5f1215b498c9e1074bdc0890321
+TextureImporter:
+  serializedVersion: 13
+  mipmaps:
+    enableMipMap: 0
+  textureSettings:
+    filterMode: 1
+    wrapU: 1
+    wrapV: 1
+  alphaIsTransparency: 1
+  textureType: 8
+  textureShape: 1
+  spriteMode: 1
+  spritePixelsToUnits: 100
+  spritePivot: {x: 0.5, y: 0.5}
+  spriteMeshType: 0
+  alignment: 0
+  maxTextureSize: 2048
+  textureCompression: 1
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    textureCompression: 1
+  userData:
+  assetBundleName:
+  assetBundleVariant:
