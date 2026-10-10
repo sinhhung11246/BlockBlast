@@ -16,12 +16,12 @@ TextureImporter:
   spritePivot: {x: 0.5, y: 0.5}
   spriteMeshType: 0
   alignment: 0
-  maxTextureSize: 2048
+  maxTextureSize: 4096
   textureCompression: 1
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 4096
     textureCompression: 1
   userData:
   assetBundleName:
