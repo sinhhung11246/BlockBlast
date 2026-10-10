@@ -17,7 +17,7 @@ namespace BlockBlast.Game
         /// <summary>Short buzz on phones when Vibration is on.</summary>
         public static void Vibrate()
         {
-#if UNITY_ANDROID || UNITY_IOS
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             if (Get(SettingsView.Toggle.Vibration)) Handheld.Vibrate();
 #endif
         }
