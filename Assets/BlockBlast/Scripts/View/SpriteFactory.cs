@@ -5,7 +5,7 @@ namespace BlockBlast.View
     /// <summary>Creates sprite renderers sized in world units. A missing sprite falls back to a white square.</summary>
     public static class SpriteFactory
     {
-        static Sprite placeholder;
+        static Sprite placeholder, pixel;
 
         /// <param name="width">World width; height follows the sprite's aspect ratio.</param>
         public static SpriteRenderer Create(string name, Transform parent, Sprite sprite, Vector2 localPos, float width, int sortingOrder)
@@ -36,6 +36,29 @@ namespace BlockBlast.View
             float scale = Mathf.Max(view.x / size.x, view.y / size.y);
             sr.transform.position = new Vector3(cam.transform.position.x, cam.transform.position.y, 0f);
             sr.transform.localScale = new Vector3(scale, scale, 1f);
+        }
+
+        /// <summary>Full-screen tinted quad, e.g. to dim what is behind a popup.</summary>
+        public static SpriteRenderer Dim(string name, Transform parent, Color color, int sortingOrder, Camera cam)
+        {
+            var sr = Create(name, parent, Pixel(), Vector2.zero, 1f, sortingOrder);
+            sr.color = color;
+            Cover(sr, cam);
+            return sr;
+        }
+
+        /// <summary>True when a world point lies inside the renderer's sprite bounds.</summary>
+        public static bool Hits(SpriteRenderer sr, Vector2 world) =>
+            sr.bounds.Contains(new Vector3(world.x, world.y, sr.bounds.center.z));
+
+        static Sprite Pixel()
+        {
+            if (pixel != null) return pixel;
+            var tex = new Texture2D(1, 1);
+            tex.SetPixel(0, 0, Color.white);
+            tex.Apply();
+            pixel = Sprite.Create(tex, new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f), 1);
+            return pixel;
         }
 
         static Sprite Placeholder()

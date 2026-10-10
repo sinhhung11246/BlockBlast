@@ -4,8 +4,8 @@ using UnityEngine;
 namespace BlockBlast.View
 {
     /// <summary>
-    /// Score texts, placed at world positions from GameConfig and drawn with IMGUI on top of the sprites.
-    /// Reads only the public fields the controller sets.
+    /// Score texts, placed at world positions from GameConfig and drawn with IMGUI on top of the sprites,
+    /// plus the crown and settings gear. Reads only the public fields the controller sets.
     /// </summary>
     public sealed class HudView : MonoBehaviour
     {
@@ -18,6 +18,7 @@ namespace BlockBlast.View
         GameConfig cfg;
         Camera cam;
         GUIStyle style;
+        SpriteRenderer gear;
         float shownScore; // rolls toward Score
 
         public void Init(GameConfig config, Camera camera)
@@ -25,7 +26,10 @@ namespace BlockBlast.View
             cfg = config;
             cam = camera;
             SpriteFactory.Create("Crown", transform, cfg.crown, cfg.crownPos, cfg.crownSize.x, 2);
+            gear = SpriteFactory.Create("Settings", transform, cfg.playGear, cfg.gearPos, cfg.gearWidth, 2);
         }
+
+        public bool HitsSettings(Vector2 world) => SpriteFactory.Hits(gear, world);
 
         void Update()
         {

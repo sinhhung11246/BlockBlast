@@ -8,8 +8,8 @@ using UnityEngine;
 namespace BlockBlast.Game
 {
     /// <summary>
-    /// Runs the core loop: deal hand -> drag piece -> place -> clear lines -> score -> refill / game over.
-    /// Auto-created when the scene has none, so an empty scene is playable.
+    /// Runs the core loop: deal hand -> drag piece -> place -> clear lines -> score -> refill / game over,
+    /// plus the Home screen and the Settings popup. Auto-created when the scene has none, so an empty scene is playable.
     /// </summary>
     public sealed class GameController : MonoBehaviour
     {
@@ -24,10 +24,12 @@ namespace BlockBlast.Game
         BoardView boardView;
         HudView hud;
         GameOverView gameOverView;
+        HomeView homeView;
+        SettingsView settingsView;
         VfxView vfx;
         PieceView[] pieceViews;
 
-        enum State { Playing, OutOfSpace, GameOver }
+        enum State { Home, Playing, OutOfSpace, GameOver }
 
         int dragIndex = -1;
         Vector2 dragOffset;
@@ -69,9 +71,13 @@ namespace BlockBlast.Game
             gameOverView.Build(config, cam);
             vfx = Child<VfxView>("Vfx");
             vfx.Init(config, cam);
+            homeView = Child<HomeView>("Home");
+            homeView.Build(config, cam);
+            settingsView = Child<SettingsView>("Settings");
+            settingsView.Build(config, cam);
             pieceViews = new PieceView[config.handSize];
 
-            Restart();
+            GoHome();
         }
 
         void SetupCamera()
@@ -105,9 +111,21 @@ namespace BlockBlast.Game
             vfx.Clear();
             state = State.Playing;
             gameOverView.Show(false);
+            homeView.Show(false);
             DealHand();
             SyncHud();
             boardView.Render(board);
+        }
+
+        /// <summary>Leaves the current game (its score still counts for Best) and shows the Home screen.</summary>
+        void GoHome()
+        {
+            if (state != State.Home) HighScoreStore.Submit(score.Score);
+            vfx.Clear();
+            state = State.Home;
+            gameOverView.Show(false);
+            homeView.Show(true);
+            SyncHud();
         }
 
         void DealHand()
@@ -125,20 +143,35 @@ namespace BlockBlast.Game
         {
             Vector2 pointer = PointerInput.WorldPosition(cam);
 
+            if (settingsView.IsOpen)
+            {
+                if (PointerInput.Pressed) TapSettings(pointer);
+                return;
+            }
+
             switch (state)
             {
+                case State.Home:
+                    if (!PointerInput.Pressed) return;
+                    if (homeView.HitsPlay(pointer)) Restart();
+                    else if (homeView.HitsSettings(pointer)) OpenSettings();
+                    return;
                 case State.OutOfSpace:
                     outOfSpaceTimer -= Time.deltaTime;
                     if (outOfSpaceTimer <= 0f) ShowGameOver();
                     return;
                 case State.GameOver:
-                    if (PointerInput.Pressed && gameOverView.HitsReplay(pointer)) Restart();
+                    if (!PointerInput.Pressed) return;
+                    if (gameOverView.HitsReplay(pointer)) Restart();
+                    else if (gameOverView.HitsHome(pointer)) GoHome();
                     return;
             }
 
             if (dragIndex < 0)
             {
-                if (PointerInput.Pressed) BeginDrag(pointer);
+                if (!PointerInput.Pressed) return;
+                if (hud.HitsSettings(pointer)) OpenSettings();
+                else BeginDrag(pointer);
                 return;
             }
 
@@ -148,6 +181,36 @@ namespace BlockBlast.Game
 
             if (PointerInput.Released) EndDrag(origin);
             else boardView.Render(board, piece.Piece, origin);
+        }
+
+        void OpenSettings()
+        {
+            foreach (SettingsView.Toggle t in System.Enum.GetValues(typeof(SettingsView.Toggle)))
+                settingsView.SetToggle(t, SettingsStore.Get(t));
+            settingsView.Show(true);
+        }
+
+        void TapSettings(Vector2 pointer)
+        {
+            switch (settingsView.Tap(pointer, out SettingsView.Toggle toggle))
+            {
+                case SettingsView.Action.Toggle:
+                    bool on = !SettingsStore.Get(toggle);
+                    SettingsStore.Set(toggle, on);
+                    settingsView.SetToggle(toggle, on);
+                    return;
+                case SettingsView.Action.Close:
+                    settingsView.Show(false);
+                    return;
+                case SettingsView.Action.Replay:
+                    settingsView.Show(false);
+                    Restart();
+                    return;
+                case SettingsView.Action.Home:
+                    settingsView.Show(false);
+                    GoHome();
+                    return;
+            }
         }
 
         void BeginDrag(Vector2 pointer)
@@ -182,7 +245,11 @@ namespace BlockBlast.Game
             vfx.Place(piece.Shape.Cells.Select(c => boardView.CellCenter(origin + c)), config.BlockSprite(piece.ColorId));
 
             LineSet lines = board.FindFullLines();
-            if (lines.Count > 0) vfx.ClearCells(ClearedCells(lines), PieceCenter(piece, origin), lines.Count);
+            if (lines.Count > 0)
+            {
+                vfx.ClearCells(ClearedCells(lines), PieceCenter(piece, origin), lines.Count);
+                SettingsStore.Vibrate();
+            }
             board.ClearLines(lines);
             score.AddPlacement(piece.Shape.Cells.Length, lines.Count);
             if (lines.Count > 0 && score.Combo >= config.comboPopupMin) vfx.Combo(score.Combo);
@@ -229,6 +296,7 @@ namespace BlockBlast.Game
 
         void SyncHud(bool newRecord = false)
         {
+            hud.gameObject.SetActive(state != State.Home);
             hud.Score = score.Score;
             hud.Best = Mathf.Max(HighScoreStore.Load(), score.Score);
             hud.OutOfSpace = state == State.OutOfSpace;

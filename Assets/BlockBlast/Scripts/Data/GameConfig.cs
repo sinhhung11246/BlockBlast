@@ -59,6 +59,19 @@ namespace BlockBlast.Data
         public Sprite gameOverTitle;
         public Sprite gameOverPanel;
         public Sprite replayButton;
+        public Sprite homeButton;
+        [Tooltip("Home screen without its buttons.")]
+        public Sprite homeBackground;
+        public Sprite adventureButton;
+        public Sprite classicButton;
+        public Sprite homeGear;
+        public Sprite playGear;
+        [Tooltip("Settings panel with its labels and icons; toggles and row buttons are drawn on top.")]
+        public Sprite settingsPanel;
+        public Sprite toggleOn;
+        public Sprite toggleOff;
+        public Sprite settingsReplayButton;
+        public Sprite settingsHomeButton;
         [Tooltip("Glow drawn over the cells of lines the dragged piece would clear.")]
         public Sprite cellHighlight;
         public Sprite comboLabel;
@@ -92,6 +105,8 @@ namespace BlockBlast.Data
         public float scoreTextHeight = 0.69f;
         public Vector2 outOfSpacePos = new Vector2(0f, -6.6f);
         public float outOfSpaceTextHeight = 0.45f;
+        public Vector2 gearPos = new Vector2(3.68f, 8.11f);
+        public float gearWidth = 0.56f;
 
         [Header("Layout: game over")]
         public Vector2 titlePos = new Vector2(0f, 4.81f);
@@ -102,8 +117,29 @@ namespace BlockBlast.Data
         public float resultLabelHeight = 0.28f;
         public Vector2 resultScorePos = new Vector2(0f, 0.8f);
         public float resultScoreHeight = 0.93f;
-        public Vector2 replayPos = new Vector2(0f, -3.18f);
+        public Vector2 replayPos = new Vector2(1.65f, -3.17f);
         public float replayWidth = 2.93f;
+        public Vector2 homePos = new Vector2(-1.81f, -3.16f);
+        public float homeWidth = 2.99f;
+
+        [Header("Layout: home")]
+        [Tooltip("Adventure has no mode of its own yet, so it starts Classic too.")]
+        public Vector2 adventurePos = new Vector2(0.03f, -4.24f);
+        public Vector2 classicPos = new Vector2(0.03f, -7.13f);
+        public float modeButtonWidth = 4.38f;
+        public Vector2 homeGearPos = new Vector2(3.55f, 7.52f);
+        public float homeGearWidth = 0.68f;
+
+        [Header("Layout: settings")]
+        public float settingsPanelWidth = 7.36f;
+        [Tooltip("Screen dim behind the panel; tapping it closes the panel.")]
+        public Color settingsDim = new Color(0f, 0f, 0f, 0.6f);
+        [Tooltip("Sound, BGM, Vibration.")]
+        public Vector2[] togglePos = { new Vector2(1.94f, 2.92f), new Vector2(1.94f, 1.76f), new Vector2(1.94f, 0.59f) };
+        public float toggleWidth = 1.28f;
+        public Vector2 settingsReplayPos = new Vector2(1.72f, -0.65f);
+        public Vector2 settingsHomePos = new Vector2(1.72f, -1.8f);
+        public float settingsButtonWidth = 1.77f;
 
         [Header("VFX")]
         [Tooltip("Highlight size relative to a cell; 1.08 puts its ring on the cell edge.")]
