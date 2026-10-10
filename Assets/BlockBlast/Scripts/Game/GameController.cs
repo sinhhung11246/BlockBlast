@@ -106,6 +106,7 @@ namespace BlockBlast.Game
 
         void Restart()
         {
+            if (state != State.Home) HighScoreStore.Submit(score.Score); // a run left mid-game still counts for Best
             board.Clear();
             score.Reset();
             vfx.Clear();
