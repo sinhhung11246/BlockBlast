@@ -15,12 +15,17 @@ namespace BlockBlast.View
             go.transform.localPosition = localPos;
 
             var sr = go.AddComponent<SpriteRenderer>();
-            sr.sprite = sprite != null ? sprite : Placeholder();
             sr.sortingOrder = sortingOrder;
-
-            float scale = width / sr.sprite.bounds.size.x;
-            go.transform.localScale = new Vector3(scale, scale, 1f);
+            SetSprite(sr, sprite, width);
             return sr;
+        }
+
+        /// <summary>Swaps the sprite and rescales so it keeps the given world width.</summary>
+        public static void SetSprite(SpriteRenderer sr, Sprite sprite, float width)
+        {
+            sr.sprite = sprite != null ? sprite : Placeholder();
+            float scale = width / sr.sprite.bounds.size.x;
+            sr.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
         /// <summary>Scales a renderer so its sprite covers the whole camera view.</summary>

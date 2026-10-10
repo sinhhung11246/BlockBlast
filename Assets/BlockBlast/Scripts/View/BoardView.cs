@@ -62,8 +62,7 @@ namespace BlockBlast.View
         {
             sr.enabled = colorId != 0;
             if (!sr.enabled) return;
-            Sprite sprite = cfg.BlockSprite(colorId);
-            if (sprite != null) sr.sprite = sprite;
+            SpriteFactory.SetSprite(sr, cfg.BlockSprite(colorId), 1f);
             sr.color = new Color(1f, 1f, 1f, alpha);
         }
     }
