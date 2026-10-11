@@ -28,6 +28,31 @@ namespace BlockBlast.View
             sr.transform.localScale = new Vector3(scale, scale, 1f);
         }
 
+        /// <summary>World-space text in the game font.</summary>
+        /// <param name="capHeight">Height of a capital letter in world units.</param>
+        public static TextMesh Text(string name, Transform parent, Font font, string text, Vector2 localPos,
+            float capHeight, Color color, int sortingOrder, TextAnchor anchor = TextAnchor.MiddleCenter)
+        {
+            const int fontSize = 100;
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = localPos;
+
+            var mesh = go.AddComponent<TextMesh>();
+            mesh.font = font;
+            mesh.fontSize = fontSize;
+            mesh.characterSize = capHeight * 10f / (fontSize * 0.7f); // cap height ~0.7 em
+            mesh.anchor = anchor;
+            mesh.alignment = anchor == TextAnchor.MiddleLeft ? TextAlignment.Left : TextAlignment.Center;
+            mesh.color = color;
+            mesh.text = text;
+
+            var mr = go.GetComponent<MeshRenderer>();
+            if (font != null) mr.sharedMaterial = font.material;
+            mr.sortingOrder = sortingOrder;
+            return mesh;
+        }
+
         /// <summary>Keeps a renderer covering the whole camera view, refitting when the screen aspect changes.</summary>
         /// <param name="margin">Extra scale, e.g. so camera shake never shows the edge.</param>
         public static void Cover(SpriteRenderer sr, Camera cam, float margin = 1f)

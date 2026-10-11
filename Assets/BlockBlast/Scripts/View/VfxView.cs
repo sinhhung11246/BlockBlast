@@ -8,11 +8,11 @@ namespace BlockBlast.View
 {
     /// <summary>
     /// Fire-and-forget effects drawn over the board: placement pop, line clear burst with shards,
-    /// Combo popup and camera shake. Every effect spawns its own sprites, so BoardView stays untouched.
+    /// praise word, Combo popup and camera shake. Every effect spawns its own sprites, so BoardView stays untouched.
     /// </summary>
     public sealed class VfxView : MonoBehaviour
     {
-        const int PopOrder = 2, ClearOrder = 3, ShardOrder = 6, ComboOrder = 15;
+        const int PopOrder = 2, ClearOrder = 3, ShardOrder = 6, ComboOrder = 15, PraiseOrder = 16;
 
         GameConfig cfg;
         Camera cam;
@@ -72,13 +72,31 @@ namespace BlockBlast.View
         {
             var root = new GameObject("Combo").transform;
             root.SetParent(transform, false);
-            root.localPosition = cfg.comboPopupPos;
 
             var parts = new List<Transform>();
             parts.Add(SpriteFactory.Create("Label", root, cfg.comboLabel, Vector2.zero, Width(cfg.comboLabel, cfg.comboLabelHeight), ComboOrder).transform);
             parts.AddRange(Number(combo, root));
             Layout(parts);
+            PopUp(root, cfg.comboPopupPos);
+        }
 
+        /// <summary>Praise word for the lines cleared by one placement: Good, Great, Excellent...</summary>
+        public void Praise(int lineCount)
+        {
+            if (cfg.praiseSprites == null || cfg.praiseSprites.Length == 0) return;
+            Sprite sprite = cfg.praiseSprites[Mathf.Min(lineCount, cfg.praiseSprites.Length) - 1];
+            if (sprite == null) return;
+
+            var root = new GameObject("Praise").transform;
+            root.SetParent(transform, false);
+            SpriteFactory.Create("Word", root, sprite, Vector2.zero, sprite.bounds.size.x * cfg.praiseScale, PraiseOrder);
+            PopUp(root, cfg.praisePos);
+        }
+
+        /// <summary>Pops in with overshoot at <paramref name="pos"/>, then rises and fades.</summary>
+        void PopUp(Transform root, Vector2 pos)
+        {
+            root.localPosition = pos;
             var renderers = root.GetComponentsInChildren<Renderer>();
             StartCoroutine(Tween(cfg.comboPopupTime, 0f, t =>
             {
@@ -86,7 +104,7 @@ namespace BlockBlast.View
                 float scale = t < popEnd ? EaseOutBack(t / popEnd) : 1f;
                 float alpha = t < fadeStart ? 1f : 1f - (t - fadeStart) / (1f - fadeStart);
                 root.localScale = Vector3.one * scale;
-                root.localPosition = cfg.comboPopupPos + Vector2.up * (cfg.comboRise * t);
+                root.localPosition = pos + Vector2.up * (cfg.comboRise * t);
                 foreach (var r in renderers) SetAlpha(r, alpha);
             }, root.gameObject));
         }
@@ -134,20 +152,7 @@ namespace BlockBlast.View
                 yield break;
             }
 
-            const int fontSize = 100;
-            var go = new GameObject("Number");
-            go.transform.SetParent(root, false);
-            var text = go.AddComponent<TextMesh>();
-            text.font = cfg.font;
-            text.fontSize = fontSize;
-            text.characterSize = cfg.comboDigitHeight * 10f / (fontSize * 0.7f); // cap height ~0.7 em
-            text.anchor = TextAnchor.MiddleCenter;
-            text.color = cfg.bestColor;
-            text.text = digits;
-            var mr = go.GetComponent<MeshRenderer>();
-            if (cfg.font != null) mr.sharedMaterial = cfg.font.material;
-            mr.sortingOrder = ComboOrder;
-            yield return go.transform;
+            yield return SpriteFactory.Text("Number", root, cfg.font, digits, Vector2.zero, cfg.comboDigitHeight, cfg.bestColor, ComboOrder).transform;
         }
 
         /// <summary>Lays parts left to right, centered on the root.</summary>

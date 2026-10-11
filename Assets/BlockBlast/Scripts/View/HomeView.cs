@@ -9,7 +9,8 @@ namespace BlockBlast.View
     /// </summary>
     public sealed class HomeView : MonoBehaviour
     {
-        SpriteRenderer adventure, classic, gear;
+        SpriteRenderer adventure, classic, gear, tasks;
+        CoinBadge coins;
 
         public void Build(GameConfig cfg, Camera cam)
         {
@@ -19,12 +20,16 @@ namespace BlockBlast.View
             adventure = SpriteFactory.Create("Adventure", transform, cfg.adventureButton, cfg.adventurePos, cfg.modeButtonWidth, 42);
             classic = SpriteFactory.Create("Classic", transform, cfg.classicButton, cfg.classicPos, cfg.modeButtonWidth, 42);
             gear = SpriteFactory.Create("Settings", transform, cfg.homeGear, cfg.homeGearPos, cfg.homeGearWidth, 42);
+            tasks = SpriteFactory.Create("Tasks", transform, cfg.homeTasksButton, cfg.homeTasks.pos, cfg.homeTasks.size, 42);
+            coins = CoinBadge.Create(transform, cfg, cfg.homeCoinsPos, 42);
             gameObject.SetActive(false);
         }
 
         public void Show(bool visible) => gameObject.SetActive(visible);
+        public void SetCoins(int amount) => coins.Set(amount);
 
         public bool HitsPlay(Vector2 world) => SpriteFactory.Hits(adventure, world) || SpriteFactory.Hits(classic, world);
         public bool HitsSettings(Vector2 world) => SpriteFactory.Hits(gear, world);
+        public bool HitsTasks(Vector2 world) => SpriteFactory.Hits(tasks, world);
     }
 }

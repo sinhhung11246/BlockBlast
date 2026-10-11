@@ -28,12 +28,20 @@ namespace BlockBlast.Data
         [Tooltip("Placements in a row without a clear before combo resets to 0.")]
         public int comboBreakAfterMisses = 1;
 
-        [Header("Coins")]
+        [Header("Coins and revive")]
         [Tooltip("Coins earned at game over = score / this.")]
         public int pointsPerCoin = 10;
+        [Tooltip("Coins to continue a lost game.")]
+        public int reviveCost = 200;
+        [Tooltip("Continues allowed per game, by coins or by ad.")]
+        public int maxRevives = 1;
+        [Tooltip("A revive rerolls the hand up to this many times for pieces that can all be placed.")]
+        public int reviveRefillAttempts = 200;
+        [Tooltip("Length of the placeholder ad used until an ads SDK is added.")]
+        public float fakeAdSeconds = 2f;
 
         [Header("Daily tasks")]
-        public int dailyTaskCount = 3;
+        public int dailyTaskCount = 5;
         [Tooltip("Each day picks dailyTaskCount different tasks from this pool.")]
         public DailyTaskDef[] dailyTaskPool =
         {
@@ -93,6 +101,27 @@ namespace BlockBlast.Data
         public Sprite toggleOff;
         public Sprite settingsReplayButton;
         public Sprite settingsHomeButton;
+        public Sprite coin;
+        public Sprite coinPill;
+        public Sprite homeTasksButton;
+        [Tooltip("Revive popup with its title bar, close X and icon; title, buttons and texts are drawn on top.")]
+        public Sprite revivePanel;
+        public Sprite coinButton;
+        public Sprite adButton;
+        public Sprite videoIcon;
+        public Sprite tasksPanel;
+        public Sprite tasksIcon;
+        public Sprite closeButton;
+        public Sprite clockIcon;
+        public Sprite taskRow;
+        public Sprite taskRewardTile;
+        public Sprite taskBar;
+        public Sprite taskBarFill;
+        public Sprite claimButton;
+        public Sprite claimButtonOff;
+        public Sprite taskDone;
+        [Tooltip("Praise words by lines cleared in one placement: 1 = Good, 2 = Great... the last one repeats.")]
+        public Sprite[] praiseSprites;
         [Tooltip("Glow drawn over the cells of lines the dragged piece would clear.")]
         public Sprite cellHighlight;
         public Sprite comboLabel;
@@ -103,6 +132,10 @@ namespace BlockBlast.Data
 
         [Header("Text colors")]
         public Color bestColor = new Color(1f, 1f, 0f);
+        public Color popupTextColor = Color.white;
+        [Tooltip("Task descriptions and reward numbers on the light task rows.")]
+        public Color taskTextColor = new Color(0.36f, 0.2f, 0.62f);
+        public Color timerColor = new Color(1f, 0.84f, 0.2f);
         public Color scoreLabelColor = new Color(0.055f, 0.75f, 0.92f);
         public Color scoreColor = new Color(0.75f, 0.86f, 0.96f);
 
@@ -142,6 +175,8 @@ namespace BlockBlast.Data
         public float replayWidth = 2.93f;
         public Vector2 homePos = new Vector2(-1.81f, -3.16f);
         public float homeWidth = 2.99f;
+        [Tooltip("Coins earned this game, inside the panel under the score.")]
+        public Vector2 coinsEarnedPos = new Vector2(0f, -0.8f);
 
         [Header("Layout: home")]
         [Tooltip("World width of homeArt, the full Figma home frame (1446 px).")]
@@ -152,6 +187,53 @@ namespace BlockBlast.Data
         public float modeButtonWidth = 4.38f;
         public Vector2 homeGearPos = new Vector2(3.55f, 7.52f);
         public float homeGearWidth = 0.68f;
+        [Tooltip("The baked tasks icon on the home art, replaced by a button.")]
+        public Place homeTasks = new Place(-3.52f, 4.84f, 1.01f);
+        public Vector2 homeCoinsPos = new Vector2(0f, 7.49f);
+
+        [Header("Layout: coin badge (relative to its center)")]
+        public Place badgePill = new Place(0.1f, 0.03f, 1.71f);
+        public Place badgeCoin = new Place(-0.63f, 0f, 0.65f);
+        public Place badgeText = new Place(0.29f, 0.03f, 0.22f);
+
+        [Header("Layout: revive (relative to the popup center)")]
+        public Vector2 revivePos = new Vector2(0f, 0.6f);
+        public float revivePanelWidth = 6.77f;
+        public Vector2 reviveCoinsPos = new Vector2(0f, 4.6f);
+        public Place reviveTitle = new Place(0f, 2.9f, 0.45f);
+        [Tooltip("Hit circle of the X baked into the panel; size = radius.")]
+        public Place reviveClose = new Place(2.63f, 2.91f, 0.4f);
+        public Place reviveCoinButton = new Place(0.09f, -1.89f, 4.28f);
+        [Tooltip("Relative to the coin button.")]
+        public Place revivePrice = new Place(0.35f, 0.12f, 0.4f);
+        public Place reviveAdButton = new Place(0f, -4.66f, 3.9f);
+        [Tooltip("Relative to the ad button.")]
+        public Place reviveVideoIcon = new Place(-1.35f, -0.08f, 0.71f);
+        [Tooltip("Relative to the ad button.")]
+        public Place reviveAdText = new Place(0.39f, 0.02f, 0.33f);
+        [Range(0f, 1f)] public float disabledAlpha = 0.45f;
+
+        [Header("Layout: daily tasks (relative to the panel center)")]
+        public float tasksPanelWidth = 7.62f;
+        public Place tasksIconPlace = new Place(-2.6f, 6.17f, 1.62f);
+        public Place tasksTitle = new Place(0.3f, 6.14f, 0.45f);
+        public Place tasksClose = new Place(2.87f, 6.11f, 0.53f);
+        public Place tasksClock = new Place(-0.89f, 4.92f, 0.53f);
+        public Place tasksTimer = new Place(0.25f, 4.95f, 0.22f);
+        public Vector2 firstRowPos = new Vector2(0.04f, 2.45f);
+        public float rowPitch = 1.96f;
+        public float rowWidth = 6.84f;
+        [Tooltip("Row parts below are relative to the row center.")]
+        public Place rowTile = new Place(-2.47f, 0f, 1.24f);
+        public Place rowCoin = new Place(-2.47f, 0.12f, 0.86f);
+        public Place rowReward = new Place(-2.47f, -0.35f, 0.24f);
+        public Place rowText = new Place(0.03f, 0.33f, 0.21f);
+        [Tooltip("Bar background; the fill grows from its left edge.")]
+        public Place rowBar = new Place(0f, -0.17f, 2.92f);
+        public float rowBarFillInset = 0.024f;
+        public Place rowButton = new Place(2.4f, -0.08f, 1.52f);
+        public Place rowButtonText = new Place(2.4f, -0.07f, 0.24f);
+        public Place rowDone = new Place(2.48f, 0f, 0.98f);
 
         [Header("Layout: settings")]
         public float settingsPanelWidth = 7.36f;
@@ -194,6 +276,9 @@ namespace BlockBlast.Data
         public float comboSpacing = 0.1f;
         public float comboPopupTime = 1f;
         public float comboRise = 0.6f;
+        public Vector2 praisePos = new Vector2(0f, 2.6f);
+        [Tooltip("World units per sprite unit, so every praise word shares one font size.")]
+        public float praiseScale = 0.33f;
         [Tooltip("Seconds for the score text to roll up to a new value.")]
         public float scoreRollTime = 0.4f;
 

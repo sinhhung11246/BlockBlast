@@ -56,4 +56,10 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 7cf442f5c29846e6bf5f0212f11bf333, type: 3}
   - {fileID: 0}
   - {fileID: 0}
+  praiseSprites:
+  - {fileID: 21300000, guid: 90114826531f4496b532846b27d024d6, type: 3}
+  - {fileID: 21300000, guid: 51075829bce246628d87e4fb826acdd5, type: 3}
+  - {fileID: 21300000, guid: 512bc1ac672b4802be7c088ca1a18ad7, type: 3}
+  - {fileID: 21300000, guid: b33b162a2307459f98e111569b243583, type: 3}
+  - {fileID: 21300000, guid: ac5491075a0640799d28bc690ae8c7be, type: 3}
   font: {fileID: 12800000, guid: 8ab1ef66338f4edbb93767e544964c91, type: 3}

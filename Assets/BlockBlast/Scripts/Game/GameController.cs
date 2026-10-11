@@ -9,7 +9,7 @@ namespace BlockBlast.Game
 {
     /// <summary>
     /// Runs the core loop: deal hand -> drag piece -> place -> clear lines -> score -> refill / game over,
-    /// plus the Home screen and the Settings popup. Auto-created when the scene has none, so an empty scene is playable.
+    /// plus Home, Settings, Daily Tasks, coins and the revive offer. Auto-created when the scene has none, so an empty scene is playable.
     /// </summary>
     public sealed class GameController : MonoBehaviour
     {
@@ -19,6 +19,8 @@ namespace BlockBlast.Game
         Board board;
         Hand hand;
         ScoreSystem score;
+        DailyTasks tasks;
+        IRewardedAds ads;
 
         Camera cam;
         BoardView boardView;
@@ -26,15 +28,18 @@ namespace BlockBlast.Game
         GameOverView gameOverView;
         HomeView homeView;
         SettingsView settingsView;
+        DailyTasksView tasksView;
+        ReviveView reviveView;
         VfxView vfx;
         PieceView[] pieceViews;
 
-        enum State { Home, Playing, OutOfSpace, GameOver }
+        enum State { Home, Playing, OutOfSpace, Revive, GameOver }
 
         int dragIndex = -1;
         Vector2 dragOffset;
         State state;
         float outOfSpaceTimer;
+        int revivesUsed;
         float fittedAspect;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -75,6 +80,14 @@ namespace BlockBlast.Game
             homeView.Build(config, cam);
             settingsView = Child<SettingsView>("Settings");
             settingsView.Build(config, cam);
+            tasksView = Child<DailyTasksView>("DailyTasks");
+            tasksView.Build(config, cam);
+            reviveView = Child<ReviveView>("Revive");
+            reviveView.Build(config, cam);
+            tasks = new DailyTasks(config);
+            var fakeAds = gameObject.AddComponent<FakeRewardedAds>();
+            fakeAds.seconds = config.fakeAdSeconds;
+            ads = fakeAds;
             pieceViews = new PieceView[config.handSize];
 
             GoHome();
@@ -116,8 +129,10 @@ namespace BlockBlast.Game
             board.Clear();
             score.Reset();
             vfx.Clear();
+            revivesUsed = 0;
             state = State.Playing;
             gameOverView.Show(false);
+            reviveView.Show(false);
             homeView.Show(false);
             DealHand();
             SyncHud();
@@ -131,6 +146,7 @@ namespace BlockBlast.Game
             vfx.Clear();
             state = State.Home;
             gameOverView.Show(false);
+            homeView.SetCoins(CoinStore.Coins);
             homeView.Show(true);
             SyncHud();
         }
@@ -138,6 +154,11 @@ namespace BlockBlast.Game
         void DealHand()
         {
             hand.Refill(board, config.refillAttempts);
+            ShowHand();
+        }
+
+        void ShowHand()
+        {
             for (int i = 0; i < hand.Count; i++)
             {
                 if (pieceViews[i] != null) Destroy(pieceViews[i].gameObject);
@@ -156,6 +177,11 @@ namespace BlockBlast.Game
                 if (PointerInput.Pressed) TapSettings(pointer);
                 return;
             }
+            if (tasksView.IsOpen)
+            {
+                if (PointerInput.Pressed) TapTasks(pointer);
+                return;
+            }
 
             switch (state)
             {
@@ -163,10 +189,16 @@ namespace BlockBlast.Game
                     if (!PointerInput.Pressed) return;
                     if (homeView.HitsPlay(pointer)) Restart();
                     else if (homeView.HitsSettings(pointer)) OpenSettings();
+                    else if (homeView.HitsTasks(pointer)) OpenTasks();
                     return;
                 case State.OutOfSpace:
                     outOfSpaceTimer -= Time.deltaTime;
-                    if (outOfSpaceTimer <= 0f) ShowGameOver();
+                    if (outOfSpaceTimer > 0f) return;
+                    if (revivesUsed < config.maxRevives) OfferRevive();
+                    else ShowGameOver();
+                    return;
+                case State.Revive:
+                    if (PointerInput.Pressed) TapRevive(pointer);
                     return;
                 case State.GameOver:
                     if (!PointerInput.Pressed) return;
@@ -221,6 +253,77 @@ namespace BlockBlast.Game
             }
         }
 
+        void OpenTasks()
+        {
+            for (int i = 0; i < tasks.Count; i++)
+                tasksView.SetRow(i, new DailyTasksView.RowState
+                {
+                    text = tasks[i].Description,
+                    reward = tasks[i].reward,
+                    progress = tasks.Progress(i),
+                    target = tasks[i].target,
+                    claimed = tasks.Claimed(i),
+                });
+            tasksView.HideRowsFrom(tasks.Count);
+            tasksView.Show(true);
+        }
+
+        void TapTasks(Vector2 pointer)
+        {
+            switch (tasksView.Tap(pointer, out int row))
+            {
+                case DailyTasksView.Action.Close:
+                    tasksView.Show(false);
+                    return;
+                case DailyTasksView.Action.Claim:
+                    if (tasks.Claim(row) == 0) return;
+                    homeView.SetCoins(CoinStore.Coins);
+                    OpenTasks(); // refresh rows
+                    return;
+            }
+        }
+
+        void OfferRevive()
+        {
+            state = State.Revive;
+            reviveView.Show(true, CoinStore.Coins);
+        }
+
+        void TapRevive(Vector2 pointer)
+        {
+            switch (reviveView.Tap(pointer))
+            {
+                case ReviveView.Action.Coins:
+                    if (CoinStore.Spend(config.reviveCost)) Revive();
+                    return;
+                case ReviveView.Action.Ad:
+                    reviveView.ShowAd(true);
+                    ads.Show(rewarded =>
+                    {
+                        if (state != State.Revive) return;
+                        reviveView.ShowAd(false);
+                        if (rewarded) Revive();
+                    });
+                    return;
+                case ReviveView.Action.Decline:
+                    reviveView.Show(false);
+                    ShowGameOver();
+                    return;
+            }
+        }
+
+        /// <summary>Continues the lost game with a fresh hand that can all be placed.</summary>
+        void Revive()
+        {
+            revivesUsed++;
+            reviveView.Show(false);
+            if (!hand.Refill(board, config.reviveRefillAttempts) && !hand.AnyFits(board)) hand.DealSmallest();
+            ShowHand();
+            state = State.Playing;
+            SyncHud();
+            if (!hand.AnyFits(board)) EnterOutOfSpace();
+        }
+
         void BeginDrag(Vector2 pointer)
         {
             float pickRadius = config.handSpacing * 0.5f;
@@ -259,8 +362,14 @@ namespace BlockBlast.Game
                 SettingsStore.Vibrate();
             }
             board.ClearLines(lines);
-            score.AddPlacement(piece.Shape.Cells.Length, lines.Count);
+            int gained = score.AddPlacement(piece.Shape.Cells.Length, lines.Count);
+            if (lines.Count > 0) vfx.Praise(lines.Count);
             if (lines.Count > 0 && score.Combo >= config.comboPopupMin) vfx.Combo(score.Combo);
+
+            tasks.Report(DailyTaskType.PlacePieces, 1);
+            tasks.Report(DailyTaskType.ClearLines, lines.Count);
+            tasks.Report(DailyTaskType.ScorePoints, gained);
+            tasks.Report(DailyTaskType.ReachCombo, score.Combo);
 
             hand.Take(i);
             Destroy(pieceViews[i].gameObject);
@@ -298,6 +407,10 @@ namespace BlockBlast.Game
         void ShowGameOver()
         {
             state = State.GameOver;
+            int earned = score.Score / Mathf.Max(1, config.pointsPerCoin);
+            CoinStore.Add(earned);
+            tasks.Report(DailyTaskType.PlayGames, 1);
+            gameOverView.SetCoinsEarned(earned);
             gameOverView.Show(true);
             SyncHud(HighScoreStore.Submit(score.Score));
         }
