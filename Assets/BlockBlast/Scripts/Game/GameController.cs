@@ -8,55 +8,40 @@ using UnityEngine;
 namespace BlockBlast.Game
 {
     /// <summary>
-    /// Runs the core loop: deal hand -> drag piece -> place -> clear lines -> score -> refill / game over,
-    /// plus Home, Settings, Daily Tasks, coins and the revive offer. Auto-created when the scene has none, so an empty scene is playable.
+    /// Game scene: runs the core loop (deal hand -> drag piece -> place -> clear lines -> score -> refill / game over)
+    /// plus the revive offer and Game Over. Board size and hand size come from the cells and slots laid out in the scene.
     /// </summary>
-    public sealed class GameController : MonoBehaviour
+    public sealed class GameController : ScreenController
     {
-        [Tooltip("Empty = Resources/GameConfig, else built-in defaults.")]
-        [SerializeField] GameConfig config;
+        [SerializeField] BoardView boardView;
+        [SerializeField] HudView hud;
+        [SerializeField] ReviveView reviveView;
+        [SerializeField] GameOverView gameOverView;
+        [SerializeField] VfxView vfx;
+        [Tooltip("Where each hand piece rests; their count is the hand size.")]
+        [SerializeField] Transform[] slots;
+        [SerializeField] SpriteRenderer block;
 
         Board board;
         Hand hand;
         ScoreSystem score;
         DailyTasks tasks;
         IRewardedAds ads;
-
-        Camera cam;
-        BoardView boardView;
-        HudView hud;
-        GameOverView gameOverView;
-        HomeView homeView;
-        SettingsView settingsView;
-        DailyTasksView tasksView;
-        ReviveView reviveView;
-        VfxView vfx;
         PieceView[] pieceViews;
 
-        enum State { Home, Playing, OutOfSpace, Revive, GameOver }
+        enum State { Playing, OutOfSpace, Revive, GameOver }
 
         int dragIndex = -1;
         Vector2 dragOffset;
         State state;
         float outOfSpaceTimer;
         int revivesUsed;
-        float fittedAspect;
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void Bootstrap()
+        protected override void Awake()
         {
-            if (FindAnyObjectByType<GameController>() == null)
-                new GameObject("BlockBlast").AddComponent<GameController>();
-        }
-
-        void Awake()
-        {
-            if (config == null) config = Resources.Load<GameConfig>("GameConfig");
-            if (config == null) config = ScriptableObject.CreateInstance<GameConfig>();
-
-            board = new Board(config.boardSize);
-            hand = new Hand(config.handSize, config.shapes.Select(Shape.Parse).ToArray(),
-                config.ColorCount, new System.Random());
+            base.Awake();
+            board = new Board(boardView.Size);
+            hand = new Hand(slots.Length, config.shapes.Select(Shape.Parse).ToArray(), config.ColorCount, new System.Random());
             score = new ScoreSystem(new ScoreSystem.Rules
             {
                 PointsPerCell = config.pointsPerCell,
@@ -64,91 +49,41 @@ namespace BlockBlast.Game
                 MultiLineBonus = config.multiLineBonus,
                 ComboBreakAfterMisses = config.comboBreakAfterMisses,
             });
-
-            SetupCamera();
-            var bg = SpriteFactory.Create("Background", transform, config.background, Vector2.zero, 1f, -10);
-            SpriteFactory.Cover(bg, cam, 1.05f); // margin so camera shake never shows the edge
-            boardView = Child<BoardView>("Board");
-            boardView.Build(config);
-            hud = Child<HudView>("Hud");
-            hud.Init(config, cam);
-            gameOverView = Child<GameOverView>("GameOver");
-            gameOverView.Build(config, cam);
-            vfx = Child<VfxView>("Vfx");
-            vfx.Init(config, cam);
-            homeView = Child<HomeView>("Home");
-            homeView.Build(config, cam);
-            settingsView = Child<SettingsView>("Settings");
-            settingsView.Build(config, cam);
-            tasksView = Child<DailyTasksView>("DailyTasks");
-            tasksView.Build(config, cam);
-            reviveView = Child<ReviveView>("Revive");
-            reviveView.Build(config, cam);
             tasks = new DailyTasks(config);
             var fakeAds = gameObject.AddComponent<FakeRewardedAds>();
             fakeAds.seconds = config.fakeAdSeconds;
             ads = fakeAds;
-            pieceViews = new PieceView[config.handSize];
+            pieceViews = new PieceView[slots.Length];
 
-            GoHome();
+            boardView.Init(config);
+            hud.Init(config.scoreRollTime);
+            vfx.Init(config, cam);
         }
 
-        void SetupCamera()
-        {
-            cam = Camera.main;
-            if (cam == null)
-            {
-                cam = new GameObject("Main Camera") { tag = "MainCamera" }.AddComponent<Camera>();
-                cam.transform.position = new Vector3(0f, 0f, -10f);
-            }
-            cam.orthographic = true;
-            cam.clearFlags = CameraClearFlags.SolidColor;
-            cam.backgroundColor = Color.black;
+        void Start() => Restart();
 
-            cam.transform.position = new Vector3(0f, 0f, -10f);
-            FitCamera();
-        }
+        protected override void Replay() => Restart();
 
-        /// <summary>Shows the whole Figma screen; wider or taller devices see extra background.</summary>
-        void FitCamera()
+        /// <summary>Leaves the current game (its score still counts for Best) for the Home scene.</summary>
+        protected override void GoHome()
         {
-            fittedAspect = cam.aspect;
-            cam.orthographicSize = Mathf.Max(config.designSize.y, config.designSize.x / cam.aspect) * 0.5f;
-        }
-
-        T Child<T>(string name) where T : Component
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(transform, false);
-            return go.AddComponent<T>();
+            HighScoreStore.Submit(score.Score);
+            Load(HomeScene);
         }
 
         void Restart()
         {
-            if (state != State.Home) HighScoreStore.Submit(score.Score); // a run left mid-game still counts for Best
+            HighScoreStore.Submit(score.Score); // a run left mid-game still counts for Best
             board.Clear();
             score.Reset();
             vfx.Clear();
             revivesUsed = 0;
             state = State.Playing;
-            gameOverView.Show(false);
-            reviveView.Show(false);
-            homeView.Show(false);
+            gameOverView.Hide();
+            reviveView.Hide();
             DealHand();
             SyncHud();
             boardView.Render(board);
-        }
-
-        /// <summary>Leaves the current game (its score still counts for Best) and shows the Home screen.</summary>
-        void GoHome()
-        {
-            if (state != State.Home) HighScoreStore.Submit(score.Score);
-            vfx.Clear();
-            state = State.Home;
-            gameOverView.Show(false);
-            homeView.SetCoins(CoinStore.Coins);
-            homeView.Show(true);
-            SyncHud();
         }
 
         void DealHand()
@@ -162,35 +97,15 @@ namespace BlockBlast.Game
             for (int i = 0; i < hand.Count; i++)
             {
                 if (pieceViews[i] != null) Destroy(pieceViews[i].gameObject);
-                pieceViews[i] = PieceView.Create(transform, hand[i].Value, config);
+                pieceViews[i] = PieceView.Create(block, transform, hand[i].Value, config);
                 ReturnToSlot(i);
             }
         }
 
-        void Update()
+        protected override void Tick(Vector2 pointer)
         {
-            if (cam.aspect != fittedAspect) FitCamera(); // screen resized or rotated
-            Vector2 pointer = PointerInput.WorldPosition(cam);
-
-            if (settingsView.IsOpen)
-            {
-                if (PointerInput.Pressed) TapSettings(pointer);
-                return;
-            }
-            if (tasksView.IsOpen)
-            {
-                if (PointerInput.Pressed) TapTasks(pointer);
-                return;
-            }
-
             switch (state)
             {
-                case State.Home:
-                    if (!PointerInput.Pressed) return;
-                    if (homeView.HitsPlay(pointer)) Restart();
-                    else if (homeView.HitsSettings(pointer)) OpenSettings();
-                    else if (homeView.HitsTasks(pointer)) OpenTasks();
-                    return;
                 case State.OutOfSpace:
                     outOfSpaceTimer -= Time.deltaTime;
                     if (outOfSpaceTimer > 0f) return;
@@ -223,70 +138,10 @@ namespace BlockBlast.Game
             else boardView.Render(board, piece.Piece, origin);
         }
 
-        void OpenSettings()
-        {
-            foreach (SettingsView.Toggle t in System.Enum.GetValues(typeof(SettingsView.Toggle)))
-                settingsView.SetToggle(t, SettingsStore.Get(t));
-            settingsView.Show(true);
-        }
-
-        void TapSettings(Vector2 pointer)
-        {
-            switch (settingsView.Tap(pointer, out SettingsView.Toggle toggle))
-            {
-                case SettingsView.Action.Toggle:
-                    bool on = !SettingsStore.Get(toggle);
-                    SettingsStore.Set(toggle, on);
-                    settingsView.SetToggle(toggle, on);
-                    return;
-                case SettingsView.Action.Close:
-                    settingsView.Show(false);
-                    return;
-                case SettingsView.Action.Replay:
-                    settingsView.Show(false);
-                    Restart();
-                    return;
-                case SettingsView.Action.Home:
-                    settingsView.Show(false);
-                    GoHome();
-                    return;
-            }
-        }
-
-        void OpenTasks()
-        {
-            for (int i = 0; i < tasks.Count; i++)
-                tasksView.SetRow(i, new DailyTasksView.RowState
-                {
-                    text = tasks[i].Description,
-                    reward = tasks[i].reward,
-                    progress = tasks.Progress(i),
-                    target = tasks[i].target,
-                    claimed = tasks.Claimed(i),
-                });
-            tasksView.HideRowsFrom(tasks.Count);
-            tasksView.Show(true);
-        }
-
-        void TapTasks(Vector2 pointer)
-        {
-            switch (tasksView.Tap(pointer, out int row))
-            {
-                case DailyTasksView.Action.Close:
-                    tasksView.Show(false);
-                    return;
-                case DailyTasksView.Action.Claim:
-                    if (tasks.Claim(row) == 0) return;
-                    homeView.SetCoins(CoinStore.Coins);
-                    OpenTasks(); // refresh rows
-                    return;
-            }
-        }
-
         void OfferRevive()
         {
             state = State.Revive;
-            reviveView.Show(true, CoinStore.Coins);
+            reviveView.Show(CoinStore.Coins, config.reviveCost);
         }
 
         void TapRevive(Vector2 pointer)
@@ -298,17 +153,15 @@ namespace BlockBlast.Game
                     return;
                 case ReviveView.Action.Ad:
                     reviveView.ShowAd(true);
-                    hud.gameObject.SetActive(false); // IMGUI text would draw over the ad
                     ads.Show(rewarded =>
                     {
                         if (state != State.Revive) return;
                         reviveView.ShowAd(false);
-                        SyncHud();
                         if (rewarded) Revive();
                     });
                     return;
                 case ReviveView.Action.Decline:
-                    reviveView.Show(false);
+                    reviveView.Hide();
                     ShowGameOver();
                     return;
             }
@@ -318,7 +171,7 @@ namespace BlockBlast.Game
         void Revive()
         {
             revivesUsed++;
-            reviveView.Show(false);
+            reviveView.Hide();
             if (!hand.Refill(board, config.reviveRefillAttempts)) hand.DealSmallest();
             ShowHand();
             state = State.Playing;
@@ -328,7 +181,7 @@ namespace BlockBlast.Game
 
         void BeginDrag(Vector2 pointer)
         {
-            float pickRadius = config.handSpacing * 0.5f;
+            float pickRadius = slots.Length > 1 ? Vector2.Distance(SlotPosition(0), SlotPosition(1)) * 0.5f : float.MaxValue;
             for (int i = 0; i < pieceViews.Length; i++)
             {
                 if (pieceViews[i] == null) continue;
@@ -412,19 +265,15 @@ namespace BlockBlast.Game
             int earned = score.Score / Mathf.Max(1, config.pointsPerCoin);
             CoinStore.Add(earned);
             tasks.Report(DailyTaskType.PlayGames, 1);
-            gameOverView.SetCoinsEarned(earned);
-            gameOverView.Show(true);
-            SyncHud(HighScoreStore.Submit(score.Score));
+            gameOverView.Show(score.Score, HighScoreStore.Submit(score.Score), earned);
+            SyncHud();
         }
 
-        void SyncHud(bool newRecord = false)
+        void SyncHud()
         {
-            hud.gameObject.SetActive(state != State.Home);
             hud.Score = score.Score;
             hud.Best = Mathf.Max(HighScoreStore.Load(), score.Score);
-            hud.OutOfSpace = state == State.OutOfSpace;
-            hud.GameOver = state == State.GameOver;
-            hud.NewRecord = newRecord;
+            hud.OutOfSpace = state == State.OutOfSpace || state == State.Revive;
         }
 
         void ReturnToSlot(int i)
@@ -433,10 +282,6 @@ namespace BlockBlast.Game
             pieceViews[i].transform.position = SlotPosition(i);
         }
 
-        Vector2 SlotPosition(int i)
-        {
-            float x = (i - (config.handSize - 1) * 0.5f) * config.handSpacing;
-            return new Vector2(x, config.handY);
-        }
+        Vector2 SlotPosition(int i) => slots[i].position;
     }
 }

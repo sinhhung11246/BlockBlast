@@ -1,4 +1,3 @@
-using BlockBlast.Data;
 using UnityEngine;
 
 namespace BlockBlast.View
@@ -12,28 +11,16 @@ namespace BlockBlast.View
         public enum Toggle { Sound, Music, Vibration }
         public enum Action { None, Close, Replay, Home, Toggle }
 
-        GameConfig cfg;
-        SpriteRenderer panel, replay, home;
-        readonly SpriteRenderer[] toggles = new SpriteRenderer[3];
+        [SerializeField] SpriteRenderer panel, replay, home;
+        [Tooltip("Sound, BGM, Vibration, in Toggle order.")]
+        [SerializeField] SpriteRenderer[] toggles = new SpriteRenderer[3];
+        [SerializeField] Sprite toggleOn, toggleOff;
 
         public bool IsOpen => gameObject.activeSelf;
 
-        public void Build(GameConfig config, Camera cam)
-        {
-            cfg = config;
-            SpriteFactory.Dim("Dim", transform, cfg.settingsDim, 50, cam);
-            panel = SpriteFactory.Create("Panel", transform, cfg.settingsPanel, Vector2.zero, cfg.settingsPanelWidth, 51);
-            for (int i = 0; i < toggles.Length; i++)
-                toggles[i] = SpriteFactory.Create(((Toggle)i).ToString(), transform, cfg.toggleOn, cfg.togglePos[i], cfg.toggleWidth, 52);
-            replay = SpriteFactory.Create("Replay", transform, cfg.settingsReplayButton, cfg.settingsReplayPos, cfg.settingsButtonWidth, 52);
-            home = SpriteFactory.Create("Home", transform, cfg.settingsHomeButton, cfg.settingsHomePos, cfg.settingsButtonWidth, 52);
-            gameObject.SetActive(false);
-        }
-
         public void Show(bool visible) => gameObject.SetActive(visible);
 
-        public void SetToggle(Toggle toggle, bool on) =>
-            SpriteFactory.SetSprite(toggles[(int)toggle], on ? cfg.toggleOn : cfg.toggleOff, cfg.toggleWidth);
+        public void SetToggle(Toggle toggle, bool on) => toggles[(int)toggle].sprite = on ? toggleOn : toggleOff;
 
         /// <summary>What a tap at <paramref name="world"/> does; tapping outside the panel closes it.</summary>
         public Action Tap(Vector2 world, out Toggle toggle)

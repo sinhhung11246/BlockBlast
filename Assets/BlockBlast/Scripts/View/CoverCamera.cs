@@ -3,22 +3,23 @@ using UnityEngine;
 namespace BlockBlast.View
 {
     /// <summary>
-    /// Scales its sprite to cover the camera view and refits whenever the view size changes,
+    /// Scales its sprite to cover the main camera's view and refits whenever the view size changes,
     /// e.g. the Editor Game view turning portrait after the first frame, or a phone rotating.
     /// </summary>
+    [RequireComponent(typeof(SpriteRenderer))]
     public sealed class CoverCamera : MonoBehaviour
     {
+        [Tooltip("Extra scale, e.g. so camera shake never shows the edge.")]
+        [SerializeField] float margin = 1f;
+
         SpriteRenderer sr;
         Camera cam;
-        float margin;
         Vector2 fitted;
 
-        public void Init(SpriteRenderer renderer, Camera camera, float scaleMargin)
+        void Awake()
         {
-            sr = renderer;
-            cam = camera;
-            margin = scaleMargin;
-            Fit();
+            sr = GetComponent<SpriteRenderer>();
+            cam = Camera.main;
         }
 
         void LateUpdate()
