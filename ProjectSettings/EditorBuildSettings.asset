@@ -4,6 +4,12 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/BlockBlast/Scenes/Home.unity
+    guid: 550d457716c9ffe44a78c2f2b7f65264
+  - enabled: 1
+    path: Assets/BlockBlast/Scenes/Game.unity
+    guid: e6a6d07d60a27b5438a228f24a8e4299
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

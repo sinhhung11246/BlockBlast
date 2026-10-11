@@ -8,11 +8,16 @@ namespace BlockBlast.View
 {
     /// <summary>
     /// Fire-and-forget effects drawn over the board: placement pop, line clear burst with shards,
-    /// praise word, Combo popup and camera shake. Every effect spawns its own sprites, so BoardView stays untouched.
+    /// praise word, Combo popup and camera shake. Every effect spawns its own sprites from the Block and Praise prefabs,
+    /// so BoardView stays untouched.
     /// </summary>
     public sealed class VfxView : MonoBehaviour
     {
-        const int PopOrder = 2, ClearOrder = 3, ShardOrder = 6, ComboOrder = 15, PraiseOrder = 16;
+        const int PopOrder = 2, ClearOrder = 3, ShardOrder = 6, ComboOrder = 15;
+
+        [SerializeField] SpriteRenderer block;
+        [Tooltip("Root that pops and fades; its SpriteRenderer child shows the word.")]
+        [SerializeField] Transform praise;
 
         GameConfig cfg;
         Camera cam;
@@ -40,7 +45,7 @@ namespace BlockBlast.View
         {
             foreach (var pos in cells)
             {
-                var sr = SpriteFactory.Create("Pop", transform, sprite, pos, 1f, PopOrder);
+                var sr = SpriteFactory.Spawn(block, transform, sprite, pos, 1f, PopOrder);
                 Vector3 baseScale = sr.transform.localScale;
                 StartCoroutine(Tween(cfg.placePopTime, 0f, t =>
                     sr.transform.localScale = baseScale * Mathf.Lerp(cfg.placePopScale, 1f, EaseOut(t)), sr.gameObject));
@@ -53,7 +58,7 @@ namespace BlockBlast.View
             foreach (var (pos, sprite) in cells)
             {
                 float delay = Vector2.Distance(pos, from) * cfg.clearStagger;
-                var sr = SpriteFactory.Create("Burst", transform, sprite, pos, 1f, ClearOrder);
+                var sr = SpriteFactory.Spawn(block, transform, sprite, pos, 1f, ClearOrder);
                 Vector3 baseScale = sr.transform.localScale;
                 StartCoroutine(Tween(cfg.clearTime, delay, t =>
                 {
@@ -87,9 +92,9 @@ namespace BlockBlast.View
             Sprite sprite = cfg.praiseSprites[Mathf.Min(lineCount, cfg.praiseSprites.Length) - 1];
             if (sprite == null) return;
 
-            var root = new GameObject("Praise").transform;
-            root.SetParent(transform, false);
-            SpriteFactory.Create("Word", root, sprite, Vector2.zero, sprite.bounds.size.x * cfg.praiseScale, PraiseOrder);
+            var root = Instantiate(praise, transform);
+            var word = root.GetComponentInChildren<SpriteRenderer>();
+            SpriteFactory.SetSprite(word, sprite, sprite.bounds.size.x * cfg.praiseScale);
             PopUp(root, cfg.praisePos);
         }
 
@@ -120,7 +125,7 @@ namespace BlockBlast.View
         {
             yield return new WaitForSeconds(delay);
 
-            var sr = SpriteFactory.Create("Shard", transform, sprite, pos, cfg.shardSize, ShardOrder);
+            var sr = SpriteFactory.Spawn(block, transform, sprite, pos, cfg.shardSize, ShardOrder);
             Vector2 velocity = (Vector2.up + UnityEngine.Random.insideUnitCircle) * cfg.shardSpeed * UnityEngine.Random.Range(0.5f, 1f);
             float spin = UnityEngine.Random.Range(-720f, 720f);
 
@@ -152,7 +157,7 @@ namespace BlockBlast.View
                 yield break;
             }
 
-            yield return SpriteFactory.Text("Number", root, cfg.font, digits, Vector2.zero, cfg.comboDigitHeight, cfg.bestColor, ComboOrder).transform;
+            yield return SpriteFactory.Text("Number", root, cfg.font, digits, Vector2.zero, cfg.comboDigitHeight, cfg.comboNumberColor, ComboOrder).transform;
         }
 
         /// <summary>Lays parts left to right, centered on the root.</summary>
