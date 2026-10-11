@@ -15,7 +15,7 @@ namespace BlockBlast.Data
         public int boardSize = 8;
         public int handSize = 3;
 
-        [Tooltip("A new hand is rerolled up to this many times until one piece fits. 1 = pure random.")]
+        [Tooltip("A new hand is rerolled up to this many times until all its pieces can be placed. 1 = pure random.")]
         public int refillAttempts = 20;
         [Tooltip("Seconds the board stays visible, with unplaceable pieces greyed, before Game Over.")]
         public float gameOverDelay = 1.5f;
@@ -27,6 +27,25 @@ namespace BlockBlast.Data
         public int multiLineBonus = 10;
         [Tooltip("Placements in a row without a clear before combo resets to 0.")]
         public int comboBreakAfterMisses = 1;
+
+        [Header("Coins")]
+        [Tooltip("Coins earned at game over = score / this.")]
+        public int pointsPerCoin = 10;
+
+        [Header("Daily tasks")]
+        public int dailyTaskCount = 3;
+        [Tooltip("Each day picks dailyTaskCount different tasks from this pool.")]
+        public DailyTaskDef[] dailyTaskPool =
+        {
+            new DailyTaskDef { type = DailyTaskType.PlayGames, target = 3, reward = 20 },
+            new DailyTaskDef { type = DailyTaskType.PlacePieces, target = 50, reward = 20 },
+            new DailyTaskDef { type = DailyTaskType.ClearLines, target = 20, reward = 30 },
+            new DailyTaskDef { type = DailyTaskType.ClearLines, target = 50, reward = 60 },
+            new DailyTaskDef { type = DailyTaskType.ScorePoints, target = 500, reward = 30 },
+            new DailyTaskDef { type = DailyTaskType.ScorePoints, target = 2000, reward = 60 },
+            new DailyTaskDef { type = DailyTaskType.ReachCombo, target = 3, reward = 30 },
+            new DailyTaskDef { type = DailyTaskType.ReachCombo, target = 5, reward = 50 },
+        };
 
         [Header("Shapes")]
         [Tooltip("Rows separated by '/', top row first. '#' filled, '.' empty.")]

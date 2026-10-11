@@ -17,6 +17,13 @@ namespace BlockBlast.Core
 
         public int this[int x, int y] => cells[x, y];
 
+        public Board Clone()
+        {
+            var copy = new Board(Size);
+            System.Array.Copy(cells, copy.cells, cells.Length);
+            return copy;
+        }
+
         public bool InBounds(Vector2Int p) => p.x >= 0 && p.y >= 0 && p.x < Size && p.y < Size;
 
         public void Clear() => System.Array.Clear(cells, 0, cells.Length);
