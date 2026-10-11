@@ -83,11 +83,13 @@ namespace BlockBlast.View
             row.text.text = state.text;
             row.reward.text = state.reward.ToString();
 
-            // Fill grows from the bar's left edge.
+            // Fill sits inside the bar and grows from its left edge.
             float p = state.target > 0 ? Mathf.Clamp01((float)state.progress / state.target) : 1f;
             row.fill.enabled = p > 0f;
-            SpriteFactory.SetSprite(row.fill, cfg.taskBarFill, BarWidth);
-            row.fill.transform.localScale = Vector3.Scale(row.fill.transform.localScale, new Vector3(p, 1f, 1f));
+            Vector2 fill = row.fill.sprite.bounds.size;
+            Vector2 bar = cfg.taskBar != null ? (Vector2)cfg.taskBar.bounds.size : fill;
+            float barHeight = cfg.rowBar.size * bar.y / bar.x;
+            row.fill.transform.localScale = new Vector3(BarWidth * p / fill.x, (barHeight - 2f * cfg.rowBarFillInset) / fill.y, 1f);
             float left = cfg.rowBar.pos.x - BarWidth * 0.5f;
             row.fill.transform.localPosition = new Vector2(left + BarWidth * p * 0.5f, cfg.rowBar.pos.y);
 

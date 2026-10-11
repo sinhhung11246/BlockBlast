@@ -16,7 +16,7 @@ namespace BlockBlast.View
             SpriteFactory.Create("Pill", badge.transform, cfg.coinPill, cfg.badgePill.pos, cfg.badgePill.size, sortingOrder);
             SpriteFactory.Create("Coin", badge.transform, cfg.coin, cfg.badgeCoin.pos, cfg.badgeCoin.size, sortingOrder + 1);
             badge.amount = SpriteFactory.Text("Amount", badge.transform, cfg.font, "0", cfg.badgeText.pos, cfg.badgeText.size,
-                cfg.popupTextColor, sortingOrder + 1);
+                cfg.badgeTextColor, sortingOrder + 1);
             return badge;
         }
 

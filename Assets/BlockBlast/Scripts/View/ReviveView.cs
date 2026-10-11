@@ -20,12 +20,11 @@ namespace BlockBlast.View
         {
             cfg = config;
             SpriteFactory.Dim("Dim", transform, cfg.settingsDim, 60, cam);
-            coins = CoinBadge.Create(transform, cfg, cfg.reviveCoinsPos, 61);
-
             popup = new GameObject("Popup").transform;
             popup.SetParent(transform, false);
             popup.localPosition = cfg.revivePos;
             SpriteFactory.Create("Panel", popup, cfg.revivePanel, Vector2.zero, cfg.revivePanelWidth, 61);
+            coins = CoinBadge.Create(popup, cfg, cfg.reviveCoinsPos, 62);
             Text(popup, "Continue?", cfg.reviveTitle, 62);
 
             coinButton = SpriteFactory.Create("CoinButton", popup, cfg.coinButton, cfg.reviveCoinButton.pos, cfg.reviveCoinButton.size, 62);

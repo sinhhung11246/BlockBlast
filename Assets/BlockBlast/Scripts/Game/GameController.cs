@@ -298,10 +298,12 @@ namespace BlockBlast.Game
                     return;
                 case ReviveView.Action.Ad:
                     reviveView.ShowAd(true);
+                    hud.gameObject.SetActive(false); // IMGUI text would draw over the ad
                     ads.Show(rewarded =>
                     {
                         if (state != State.Revive) return;
                         reviveView.ShowAd(false);
+                        SyncHud();
                         if (rewarded) Revive();
                     });
                     return;
@@ -317,7 +319,7 @@ namespace BlockBlast.Game
         {
             revivesUsed++;
             reviveView.Show(false);
-            if (!hand.Refill(board, config.reviveRefillAttempts) && !hand.AnyFits(board)) hand.DealSmallest();
+            if (!hand.Refill(board, config.reviveRefillAttempts)) hand.DealSmallest();
             ShowHand();
             state = State.Playing;
             SyncHud();

@@ -57,7 +57,7 @@ namespace BlockBlast.Core
             return false;
         }
 
-        /// <summary>Deals copies of the smallest shape, e.g. after a revive found no solvable roll.</summary>
+        /// <summary>Deals copies of the smallest shape (a single cell), e.g. after a revive found no solvable roll.</summary>
         public void DealSmallest()
         {
             Shape smallest = pool[0];

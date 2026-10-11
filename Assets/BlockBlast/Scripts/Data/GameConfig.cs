@@ -176,7 +176,7 @@ namespace BlockBlast.Data
         public Vector2 homePos = new Vector2(-1.81f, -3.16f);
         public float homeWidth = 2.99f;
         [Tooltip("Coins earned this game, inside the panel under the score.")]
-        public Vector2 coinsEarnedPos = new Vector2(0f, -0.8f);
+        public Vector2 coinsEarnedPos = new Vector2(0f, -0.3f);
 
         [Header("Layout: home")]
         [Tooltip("World width of homeArt, the full Figma home frame (1446 px).")]
@@ -195,22 +195,24 @@ namespace BlockBlast.Data
         public Place badgePill = new Place(0.1f, 0.03f, 1.71f);
         public Place badgeCoin = new Place(-0.63f, 0f, 0.65f);
         public Place badgeText = new Place(0.29f, 0.03f, 0.22f);
+        public Color badgeTextColor = new Color(0.36f, 0.2f, 0.62f);
 
         [Header("Layout: revive (relative to the popup center)")]
-        public Vector2 revivePos = new Vector2(0f, 0.6f);
+        public Vector2 revivePos = new Vector2(0f, 1.2f);
         public float revivePanelWidth = 6.77f;
-        public Vector2 reviveCoinsPos = new Vector2(0f, 4.6f);
+        [Tooltip("Coin balance, inside the panel left of the icon.")]
+        public Vector2 reviveCoinsPos = new Vector2(-1.95f, 1.85f);
         public Place reviveTitle = new Place(0f, 2.9f, 0.45f);
         [Tooltip("Hit circle of the X baked into the panel; size = radius.")]
         public Place reviveClose = new Place(2.63f, 2.91f, 0.4f);
-        public Place reviveCoinButton = new Place(0.09f, -1.89f, 4.28f);
+        public Place reviveCoinButton = new Place(-1.53f, -1.95f, 2.9f);
         [Tooltip("Relative to the coin button.")]
-        public Place revivePrice = new Place(0.35f, 0.12f, 0.4f);
-        public Place reviveAdButton = new Place(0f, -4.66f, 3.9f);
+        public Place revivePrice = new Place(0.24f, 0.08f, 0.3f);
+        public Place reviveAdButton = new Place(1.53f, -1.95f, 2.9f);
         [Tooltip("Relative to the ad button.")]
-        public Place reviveVideoIcon = new Place(-1.35f, -0.08f, 0.71f);
+        public Place reviveVideoIcon = new Place(-0.86f, -0.04f, 0.6f);
         [Tooltip("Relative to the ad button.")]
-        public Place reviveAdText = new Place(0.39f, 0.02f, 0.33f);
+        public Place reviveAdText = new Place(0.3f, 0.01f, 0.28f);
         [Range(0f, 1f)] public float disabledAlpha = 0.45f;
 
         [Header("Layout: daily tasks (relative to the panel center)")]
@@ -230,7 +232,8 @@ namespace BlockBlast.Data
         public Place rowText = new Place(0.03f, 0.33f, 0.21f);
         [Tooltip("Bar background; the fill grows from its left edge.")]
         public Place rowBar = new Place(0f, -0.17f, 2.92f);
-        public float rowBarFillInset = 0.024f;
+        [Tooltip("Gap between the bar's edge and its fill, on every side.")]
+        public float rowBarFillInset = 0.03f;
         public Place rowButton = new Place(2.4f, -0.08f, 1.52f);
         public Place rowButtonText = new Place(2.4f, -0.07f, 0.24f);
         public Place rowDone = new Place(2.48f, 0f, 0.98f);
