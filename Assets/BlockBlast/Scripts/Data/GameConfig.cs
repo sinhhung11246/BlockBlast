@@ -9,9 +9,15 @@ namespace BlockBlast.Data
     [CreateAssetMenu(menuName = "BlockBlast/Game Config", fileName = "GameConfig")]
     public sealed class GameConfig : ScriptableObject
     {
-        [Header("Hand")]
-        [Tooltip("A new hand is rerolled up to this many times until all its pieces can be placed. 1 = pure random.")]
+        [Header("Dealing")]
+        [Tooltip("Rolls tried per new hand. Only hands whose pieces can all be placed count; 1 = pure random.")]
         public int refillAttempts = 20;
+        [Tooltip("Board fill (0-1) above which the dealer keeps its friendliest roll instead of the first; 1 = never.")]
+        [Range(0f, 1f)] public float mercyFillStart = 0.5f;
+        [Tooltip("Mercy score per line the hand's pieces can clear right away.")]
+        public float mercyClearWeight = 2f;
+        [Tooltip("Mercy score lost per cell in the hand, so crowded boards get smaller pieces.")]
+        public float mercyCellWeight = 0.5f;
         [Tooltip("Seconds the board stays visible, with unplaceable pieces greyed, before the revive offer or Game Over.")]
         public float gameOverDelay = 1.5f;
         [Tooltip("Hand pieces are drawn at this scale; a dragged piece is full size.")]
@@ -58,22 +64,22 @@ namespace BlockBlast.Data
         };
 
         [Header("Shapes")]
-        [Tooltip("Rows separated by '/', top row first. '#' filled, '.' empty.")]
-        public string[] shapes =
+        [Tooltip("Every piece shape and its relative chance: small and line pieces common, big ones rare.")]
+        public ShapeDef[] shapes =
         {
-            "#",
-            "##", "#/#",
-            "###", "#/#/#",
-            "####", "#/#/#/#",
-            "#####", "#/#/#/#/#",
-            "##/##",
-            "###/###/###",
-            "##/#.", "##/.#", "#./##", ".#/##",
-            "#../#../###", "###/..#/..#", "..#/..#/###", "###/#../#..",
-            "#./#./##", "##/.#/.#", "###/#..", "..#/###",
-            ".#/.#/##", "##/#./#.", "#../###", "###/..#",
-            "###/.#.", ".#./###", "#./##/#.", ".#/##/.#",
-            "##./.##", ".##/##.", "#./##/.#", ".#/##/#.",
+            new ShapeDef("#", 1f),
+            new ShapeDef("##", 1.2f), new ShapeDef("#/#", 1.2f),
+            new ShapeDef("###", 1.2f), new ShapeDef("#/#/#", 1.2f),
+            new ShapeDef("####", 0.8f), new ShapeDef("#/#/#/#", 0.8f),
+            new ShapeDef("#####", 0.3f), new ShapeDef("#/#/#/#/#", 0.3f),
+            new ShapeDef("##/##", 1f),
+            new ShapeDef("###/###/###", 0.25f),
+            new ShapeDef("##/#.", 1f), new ShapeDef("##/.#", 1f), new ShapeDef("#./##", 1f), new ShapeDef(".#/##", 1f),
+            new ShapeDef("#../#../###", 0.3f), new ShapeDef("###/..#/..#", 0.3f), new ShapeDef("..#/..#/###", 0.3f), new ShapeDef("###/#../#..", 0.3f),
+            new ShapeDef("#./#./##", 0.6f), new ShapeDef("##/.#/.#", 0.6f), new ShapeDef("###/#..", 0.6f), new ShapeDef("..#/###", 0.6f),
+            new ShapeDef(".#/.#/##", 0.6f), new ShapeDef("##/#./#.", 0.6f), new ShapeDef("#../###", 0.6f), new ShapeDef("###/..#", 0.6f),
+            new ShapeDef("###/.#.", 0.6f), new ShapeDef(".#./###", 0.6f), new ShapeDef("#./##/#.", 0.6f), new ShapeDef(".#/##/.#", 0.6f),
+            new ShapeDef("##./.##", 0.5f), new ShapeDef(".##/##.", 0.5f), new ShapeDef("#./##/.#", 0.5f), new ShapeDef(".#/##/#.", 0.5f),
         };
 
         [Header("Blocks")]

@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: GameConfig
   m_EditorClassIdentifier: 
   refillAttempts: 20
+  mercyFillStart: 0.5
+  mercyClearWeight: 2
+  mercyCellWeight: 0.5
   gameOverDelay: 1.5
   handPieceScale: 0.45
   dragLift: 2
@@ -53,41 +56,76 @@ MonoBehaviour:
     target: 5
     reward: 50
   shapes:
-  - '#'
-  - '##'
-  - '#/#'
-  - '###'
-  - '#/#/#'
-  - '####'
-  - '#/#/#/#'
-  - '#####'
-  - '#/#/#/#/#'
-  - '##/##'
-  - '###/###/###'
-  - '##/#.'
-  - '##/.#'
-  - '#./##'
-  - .#/##
-  - '#../#../###'
-  - '###/..#/..#'
-  - ..#/..#/###
-  - '###/#../#..'
-  - '#./#./##'
-  - '##/.#/.#'
-  - '###/#..'
-  - ..#/###
-  - .#/.#/##
-  - '##/#./#.'
-  - '#../###'
-  - '###/..#'
-  - '###/.#.'
-  - .#./###
-  - '#./##/#.'
-  - .#/##/.#
-  - '##./.##'
-  - .##/##.
-  - '#./##/.#'
-  - .#/##/#.
+  - pattern: '#'
+    weight: 1
+  - pattern: '##'
+    weight: 1.2
+  - pattern: '#/#'
+    weight: 1.2
+  - pattern: '###'
+    weight: 1.2
+  - pattern: '#/#/#'
+    weight: 1.2
+  - pattern: '####'
+    weight: 0.8
+  - pattern: '#/#/#/#'
+    weight: 0.8
+  - pattern: '#####'
+    weight: 0.3
+  - pattern: '#/#/#/#/#'
+    weight: 0.3
+  - pattern: '##/##'
+    weight: 1
+  - pattern: '###/###/###'
+    weight: 0.25
+  - pattern: '##/#.'
+    weight: 1
+  - pattern: '##/.#'
+    weight: 1
+  - pattern: '#./##'
+    weight: 1
+  - pattern: .#/##
+    weight: 1
+  - pattern: '#../#../###'
+    weight: 0.3
+  - pattern: '###/..#/..#'
+    weight: 0.3
+  - pattern: ..#/..#/###
+    weight: 0.3
+  - pattern: '###/#../#..'
+    weight: 0.3
+  - pattern: '#./#./##'
+    weight: 0.6
+  - pattern: '##/.#/.#'
+    weight: 0.6
+  - pattern: '###/#..'
+    weight: 0.6
+  - pattern: ..#/###
+    weight: 0.6
+  - pattern: .#/.#/##
+    weight: 0.6
+  - pattern: '##/#./#.'
+    weight: 0.6
+  - pattern: '#../###'
+    weight: 0.6
+  - pattern: '###/..#'
+    weight: 0.6
+  - pattern: '###/.#.'
+    weight: 0.6
+  - pattern: .#./###
+    weight: 0.6
+  - pattern: '#./##/#.'
+    weight: 0.6
+  - pattern: .#/##/.#
+    weight: 0.6
+  - pattern: '##./.##'
+    weight: 0.5
+  - pattern: .##/##.
+    weight: 0.5
+  - pattern: '#./##/.#'
+    weight: 0.5
+  - pattern: .#/##/#.
+    weight: 0.5
   blockSprites:
   - {fileID: 21300000, guid: 08892a6b235047058467f40c0c2482a9, type: 3}
   - {fileID: 21300000, guid: f4657157928d4b24aff6d64bb74608d2, type: 3}

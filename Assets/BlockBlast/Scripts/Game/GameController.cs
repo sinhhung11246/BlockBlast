@@ -41,7 +41,13 @@ namespace BlockBlast.Game
         {
             base.Awake();
             board = new Board(boardView.Size);
-            hand = new Hand(slots.Length, config.shapes.Select(Shape.Parse).ToArray(), config.ColorCount, new System.Random());
+            hand = new Hand(slots.Length, config.shapes.Select(s => Shape.Parse(s.pattern)).ToArray(),
+                config.shapes.Select(s => s.weight).ToArray(), config.ColorCount, new System.Random(), new Hand.Rules
+                {
+                    MercyFillStart = config.mercyFillStart,
+                    ClearWeight = config.mercyClearWeight,
+                    CellWeight = config.mercyCellWeight,
+                });
             score = new ScoreSystem(new ScoreSystem.Rules
             {
                 PointsPerCell = config.pointsPerCell,
