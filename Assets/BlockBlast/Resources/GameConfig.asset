@@ -43,6 +43,24 @@ MonoBehaviour:
   toggleOff: {fileID: 21300000, guid: de0807bcdab1449bbde1f3ea77b0d672, type: 3}
   settingsReplayButton: {fileID: 21300000, guid: 8744ca11554642e0ba172f3a620b06c2, type: 3}
   settingsHomeButton: {fileID: 21300000, guid: e7d99cb66f964b31929f7d120e497f7f, type: 3}
+  coin: {fileID: 21300000, guid: 122272e1cf3147ed8fbb33e0fb68534b, type: 3}
+  coinPill: {fileID: 21300000, guid: 4ef616cbf21640a29b658af55270c923, type: 3}
+  homeTasksButton: {fileID: 21300000, guid: 55cf8dae2c534778ab781d337100dc4f, type: 3}
+  revivePanel: {fileID: 21300000, guid: 20768dc7d9e846438752bf21cba0fc58, type: 3}
+  coinButton: {fileID: 21300000, guid: 8abf5f38509b477badbffcff4724a221, type: 3}
+  adButton: {fileID: 21300000, guid: 4c0576da9673477a8bed5b3053db68b9, type: 3}
+  videoIcon: {fileID: 21300000, guid: 6e480112836746b6abb4bd79ec2665f9, type: 3}
+  tasksPanel: {fileID: 21300000, guid: cbec79039a5d4e778714b377092096bc, type: 3}
+  tasksIcon: {fileID: 21300000, guid: c0521eaca1b64ef9b1aa5e11a0358693, type: 3}
+  closeButton: {fileID: 21300000, guid: eee1a6bc1129405887d909fe0cdca030, type: 3}
+  clockIcon: {fileID: 21300000, guid: ae38c96bec21445db2ff45b3c1bb974d, type: 3}
+  taskRow: {fileID: 21300000, guid: db824076e4e44831bc17065b46c46d24, type: 3}
+  taskRewardTile: {fileID: 21300000, guid: d5b7ea4ae79e485dbe4ea7ecc63523c9, type: 3}
+  taskBar: {fileID: 21300000, guid: 17ac131735b54a449ec2cf8331710e70, type: 3}
+  taskBarFill: {fileID: 21300000, guid: b7d24fb36db34b17920025cf9bcce559, type: 3}
+  claimButton: {fileID: 21300000, guid: d89d26b6f7dd44b59807d01e0cd11cc9, type: 3}
+  claimButtonOff: {fileID: 21300000, guid: 13d4dbcf395b4dd4b042f31ea50d962d, type: 3}
+  taskDone: {fileID: 21300000, guid: 97132d23a66b47f19a1d484fa916bf41, type: 3}
   cellHighlight: {fileID: 21300000, guid: 3a963d9bbf0f4a0ea564f65bc95ea653, type: 3}
   comboLabel: {fileID: 21300000, guid: bc86f130a2dc4cf083eec4e058b573aa, type: 3}
   comboDigits:
